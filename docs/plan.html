@@ -1,0 +1,1122 @@
+<title>Fingerprint Build Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --ground:#EBECEF; --panel:#F8F9FB; --panel-2:#FFFFFF;
+  --ink:#141822; --ink-soft:#3D4552; --ink-mute:#6C7482;
+  --rule:#D2D6DD; --rule-soft:#E3E6EB;
+  --accent:#3B4CC0; --accent-soft:#E5E8F8;
+  --err:#AC450F; --err-soft:#F6E7DB;
+  --ok:#0E6A5E; --ok-soft:#DBEDE9;
+  --code-bg:#F0F1F4;
+  --sans:"Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1218; --panel:#161A22; --panel-2:#1C212B;
+    --ink:#E4E7ED; --ink-soft:#B2B9C5; --ink-mute:#7E8798;
+    --rule:#2B3141; --rule-soft:#222835;
+    --accent:#8D9BF6; --accent-soft:#1D2340;
+    --err:#E08B4E; --err-soft:#2D2118;
+    --ok:#4FC0AE; --ok-soft:#12292A;
+    --code-bg:#11151C;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1218; --panel:#161A22; --panel-2:#1C212B;
+  --ink:#E4E7ED; --ink-soft:#B2B9C5; --ink-mute:#7E8798;
+  --rule:#2B3141; --rule-soft:#222835;
+  --accent:#8D9BF6; --accent-soft:#1D2340;
+  --err:#E08B4E; --err-soft:#2D2118;
+  --ok:#4FC0AE; --ok-soft:#12292A;
+  --code-bg:#11151C;
+}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+p{font-family:var(--serif);font-size:1.0625rem;line-height:1.62;color:var(--ink-soft);max-width:68ch;margin:0}
+a{color:var(--accent)}
+code,kbd{font-family:var(--mono);font-size:.855em;background:var(--code-bg);border:1px solid var(--rule-soft);border-radius:3px;padding:.08em .34em;color:var(--ink)}
+pre{font-family:var(--mono);font-size:.8125rem;line-height:1.62;background:var(--code-bg);border:1px solid var(--rule-soft);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0;color:var(--ink)}
+pre code{background:none;border:0;padding:0;font-size:1em}
+h1,h2,h3,h4{font-family:var(--sans);text-wrap:balance;margin:0;letter-spacing:-.012em}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.09em;font-weight:500;color:var(--ink-mute);text-align:left;padding:0 12px 7px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top;color:var(--ink-soft)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+td strong{color:var(--ink);font-weight:600}
+.tw{overflow-x:auto}
+
+/* shell */
+.shell{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:0 72px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:44px;align-items:start}
+.rail{position:sticky;top:0;padding-block:28px;max-height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.rail a{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.02em;color:var(--ink-mute);text-decoration:none;padding:4px 8px;border-left:2px solid transparent;border-radius:0 3px 3px 0}
+.rail a:hover{color:var(--ink);background:var(--panel)}
+.rail a.is-current{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+.rail .rail-h{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-mute);padding:14px 8px 4px;opacity:.7}
+main{padding-block:28px;min-width:0;display:flex;flex-direction:column;gap:54px}
+
+/* masthead */
+.mast{display:flex;flex-direction:column;gap:18px;padding-block:28px 0}
+.eyebrow{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.17em;color:var(--err)}
+.mast h1{font-size:clamp(2.1rem,5.5vw,3.05rem);font-weight:700;line-height:1.02;letter-spacing:-.028em}
+.mast .pitch{font-size:1.19rem;max-width:56ch}
+.facts{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);border-radius:7px;overflow:hidden;background:var(--panel)}
+.fact{flex:1 1 160px;padding:12px 16px;border-right:1px solid var(--rule-soft);display:flex;flex-direction:column;gap:3px}
+.fact:last-child{border-right:0}
+.fact dt{font-family:var(--mono);font-size:.63rem;text-transform:uppercase;letter-spacing:.11em;color:var(--ink-mute)}
+.fact dd{margin:0;font-size:.9rem;font-weight:600;color:var(--ink)}
+
+/* sections */
+section{scroll-margin-top:24px;display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:9px}
+.sec-num{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--err);letter-spacing:.04em}
+.sec-head h2{font-size:1.42rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:600;margin-top:6px}
+h4{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.11em;color:var(--ink-mute);font-weight:500}
+.stack{display:flex;flex-direction:column;gap:14px}
+
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 6px 6px 0;padding:13px 17px}
+.note p{color:var(--ink);max-width:66ch}
+.note .lbl{font-family:var(--mono);font-size:.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);display:block;margin-bottom:5px;font-weight:700}
+.warn{border-left-color:var(--err);background:var(--err-soft)}
+.warn .lbl{color:var(--err)}
+.gate{border-left-color:var(--ok);background:var(--ok-soft)}
+.gate .lbl{color:var(--ok)}
+
+/* scope columns */
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+.scope{display:flex;flex-direction:column;gap:9px}
+.scope ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.scope li{font-size:.875rem;color:var(--ink-soft);padding-left:19px;position:relative;line-height:1.45}
+.scope.in li::before{content:"";position:absolute;left:0;top:.52em;width:8px;height:8px;border-radius:2px;background:var(--ok)}
+.scope.out li{color:var(--ink-mute)}
+.scope.out li::before{content:"";position:absolute;left:0;top:.52em;width:8px;height:2px;background:var(--err)}
+
+/* phases */
+.phase{border:1px solid var(--rule);border-radius:9px;background:var(--panel);overflow:hidden}
+.ph-head{display:flex;flex-wrap:wrap;align-items:center;gap:11px;padding:15px 20px;border-bottom:1px solid var(--rule);background:var(--panel-2)}
+.ph-num{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--panel-2);background:var(--ink);border-radius:4px;padding:3px 7px;letter-spacing:.03em}
+.ph-head h3{font-size:1.07rem;font-weight:700;margin:0;flex:1 1 auto;min-width:160px;color:var(--ink)}
+.days{font-family:var(--mono);font-size:.68rem;font-weight:500;color:var(--err);background:var(--err-soft);border:1px solid var(--err);border-radius:20px;padding:2px 10px;white-space:nowrap}
+.prog{font-family:var(--mono);font-size:.68rem;color:var(--ink-mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ph-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px}
+.goal{font-family:var(--serif);font-size:1rem;color:var(--ink);max-width:70ch;margin:0}
+.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tasks li{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:11px;align-items:start;padding:8px 0;border-bottom:1px solid var(--rule-soft)}
+.tasks li:last-child{border-bottom:0}
+.tasks input[type=checkbox]{margin:3px 0 0;width:15px;height:15px;accent-color:var(--ok);cursor:pointer;flex:none}
+.tag{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute);border:1px solid var(--rule);border-radius:3px;padding:2px 5px;margin-top:2px;white-space:nowrap}
+.tag.api{color:var(--accent);border-color:var(--accent)}
+.tag.web{color:var(--err);border-color:var(--err)}
+.tag.ops{color:var(--ok);border-color:var(--ok)}
+.tasks label{font-size:.885rem;color:var(--ink-soft);line-height:1.46;cursor:pointer}
+.tasks input:checked + .tag + label{color:var(--ink-mute);text-decoration:line-through;text-decoration-color:var(--rule)}
+
+/* bench table inputs */
+.bench input{font-family:var(--mono);font-size:.82rem;width:100%;min-width:68px;background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:5px 8px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bench input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.bench td:first-child{font-weight:600;color:var(--ink);font-family:var(--mono);font-size:.78rem}
+
+/* qa */
+.qa{display:flex;flex-direction:column;gap:17px}
+.qa-item{display:flex;flex-direction:column;gap:6px;padding-left:15px;border-left:2px solid var(--rule)}
+.qa-item q{display:block;font-size:.96rem;font-weight:600;color:var(--ink);quotes:none}
+.qa-item q::before,.qa-item q::after{content:""}
+.qa-item p{font-size:1rem}
+
+.keys{font-family:var(--mono);font-size:.78rem}
+.dim{color:var(--ink-mute)}
+.diag{width:100%;height:auto;max-width:100%;display:block}
+.chk{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:8px}
+.chk li{display:flex;gap:9px;align-items:start;font-size:.875rem;color:var(--ink-soft)}
+.chk input{margin:3px 0 0;width:15px;height:15px;accent-color:var(--ok);flex:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .rail{flex-direction:row;overflow-x:auto;max-height:none;top:0;z-index:5;background:var(--ground);border-bottom:1px solid var(--rule);padding-block:9px;gap:4px;margin-inline:-20px;padding-inline:20px}
+  .rail .rail-h{display:none}
+  .rail a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;border-radius:3px}
+  .rail a.is-current{border-left:0;border-bottom-color:var(--accent)}
+  main{gap:44px}
+  .tasks li{grid-template-columns:auto minmax(0,1fr);row-gap:3px}
+  .tag{grid-column:2}
+  .tasks label{grid-column:2}
+}
+</style>
+
+<div class="shell">
+<nav class="rail" aria-label="Contents">
+  <span class="rail-h">Frame</span>
+  <a href="#scope">00 · Scope guard</a>
+  <a href="#stack">01 · Stack</a>
+  <a href="#arch">02 · Architecture</a>
+  <a href="#tree">03 · Repo layout</a>
+  <a href="#data">04 · Data model</a>
+  <a href="#api">05 · API surface</a>
+  <a href="#fp">06 · Fingerprinting</a>
+  <a href="#redis">07 · Redis keyspace</a>
+  <span class="rail-h">Build</span>
+  <a href="#p0">P0 · Decisions</a>
+  <a href="#p1">P1 · Skeleton</a>
+  <a href="#p2">P2 · Identity</a>
+  <a href="#p3">P3 · Pastes</a>
+  <a href="#p4">P4 · Client</a>
+  <a href="#p5">P5 · Engine</a>
+  <a href="#p6">P6 · Measure</a>
+  <a href="#p7">P7 · Ship</a>
+  <span class="rail-h">Prove</span>
+  <a href="#test">08 · Testing</a>
+  <a href="#bench">09 · Benchmark</a>
+  <a href="#deploy">10 · Deploy</a>
+  <a href="#risk">11 · Risk &amp; cuts</a>
+  <a href="#defend">12 · Defense</a>
+  <a href="#done">13 · Done</a>
+</nav>
+
+<main>
+
+<header class="mast">
+  <span class="eyebrow">21 days · hard deadline</span>
+  <h1>Snippet &amp; log sharing with automatic error grouping</h1>
+  <p class="pitch">You paste an error. It tells you how many other people hit the same bug.</p>
+  <dl class="facts">
+    <div class="fact"><dt>Shape</dt><dd>Single Express monolith</dd></div>
+    <div class="fact"><dt>Stores</dt><dd>MongoDB + Redis</dd></div>
+    <div class="fact"><dt>Core algorithm</dt><dd>Stack-trace fingerprints</dd></div>
+    <div class="fact"><dt>Deliverable</dt><dd>Live URL + benchmark</dd></div>
+    <div class="fact"><dt>Success test</dt><dd>40 min of defense</dd></div>
+  </dl>
+  <div class="note">
+    <span class="lbl">What this project is for</span>
+    <p>This is not a product. It is one system deep enough that you can answer any question about it for forty minutes without reaching. Every decision below exists so that you can explain it, measure it, or point at the line where it breaks. Depth is the feature.</p>
+  </div>
+</header>
+
+<section id="scope">
+  <div class="sec-head"><span class="sec-num">00</span><h2>Scope guard</h2></div>
+  <p>Read this section on the morning you feel the urge to add something. Three weeks is roughly fifteen working days after life takes its cut. A feature added in week two is a feature that steals from the benchmark in week three.</p>
+  <div class="cols2">
+    <div class="scope in">
+      <h4>In scope — build exactly this</h4>
+      <ul>
+        <li>Paste create, read, delete — anonymous and authenticated</li>
+        <li>JWT auth with refresh-token rotation</li>
+        <li>Stack-trace parsing for <strong>two</strong> runtimes: Node and Python</li>
+        <li>Fingerprint grouping of identical errors across users</li>
+        <li>Trending pastes, computed from a Redis sorted set</li>
+        <li>Redis read cache, buffered view counters, rate limiting</li>
+        <li>A load test with honest before/after numbers</li>
+        <li>Deployed at a URL a stranger can open</li>
+      </ul>
+    </div>
+    <div class="scope out">
+      <h4>Out of scope — do not build these</h4>
+      <ul>
+        <li>Kafka, microservices, Kubernetes, a service mesh</li>
+        <li>Teams, orgs, roles, anything past owner-vs-anonymous</li>
+        <li>Fifty-language syntax highlighting — five is plenty</li>
+        <li>Custom domains, paid tiers, billing</li>
+        <li>Comments, reactions, follows, notifications</li>
+        <li>A mobile app</li>
+        <li>A third stack-trace runtime</li>
+        <li>Rewriting the codebase in another language mid-project</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note warn">
+    <span class="lbl">The rule that decides every argument</span>
+    <p>If you cannot state the bottleneck a dependency solves in one sentence containing a number, remove the dependency. If you finish early, spend the time on DSA, not features.</p>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Tech stack, and why each piece is there</h2></div>
+  <p>Every row has a one-sentence justification because you will be asked for it. Pin exact versions on day one and never float them — a dependency that upgrades itself mid-project costs you a day you do not have.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Layer</th><th>Choice</th><th>Why this one, in one sentence</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Runtime</strong></td><td class="keys">Node 24 LTS</td><td>You already run it locally; pin the identical major in Docker, CI and <code>engines</code> so all three agree.</td></tr>
+      <tr><td><strong>HTTP</strong></td><td class="keys">Express 5</td><td>Async handler rejections propagate to the error middleware on their own, so you delete an entire class of wrapper.</td></tr>
+      <tr><td><strong>ODM</strong></td><td class="keys">Mongoose 8</td><td>Index declarations live next to the schema, which means your index story is readable in one file during an interview.</td></tr>
+      <tr><td><strong>Database</strong></td><td class="keys">MongoDB 7</td><td>TTL indexes expire pastes and partial indexes skip null fingerprints, so two features cost zero application code.</td></tr>
+      <tr><td><strong>Cache</strong></td><td class="keys">Redis 7 via ioredis</td><td>ioredis <code>defineCommand</code> registers your rate-limit Lua script once and calls it like a native command.</td></tr>
+      <tr><td><strong>Validation</strong></td><td class="keys">Zod</td><td>One schema validates the body and documents the contract; a rejected request never reaches a model.</td></tr>
+      <tr><td><strong>Auth</strong></td><td class="keys">jsonwebtoken + bcrypt</td><td>Boring, auditable, and bcrypt's cost factor gives you a real number to quote about login latency.</td></tr>
+      <tr><td><strong>Slugs</strong></td><td class="keys">nanoid(10)</td><td>Ten URL-safe characters is ~60 bits of entropy — collisions are negligible at your scale and the unique index catches the rest.</td></tr>
+      <tr><td><strong>Logging</strong></td><td class="keys">pino + pino-http</td><td>Structured JSON with a request id per line, which is the difference between debugging a load test and guessing.</td></tr>
+      <tr><td><strong>Client</strong></td><td class="keys">React 19 + Vite</td><td>Fast dev server, static build output, and the deploy target is a folder of files.</td></tr>
+      <tr><td><strong>Editor</strong></td><td class="keys">CodeMirror 6</td><td>Used twice — editable on create, read-only on view — so highlighting costs you no second dependency.</td></tr>
+      <tr><td><strong>Routing</strong></td><td class="keys">React Router 7</td><td>Five routes, nothing exotic.</td></tr>
+      <tr><td><strong>Styling</strong></td><td class="keys">Tailwind (pick day 0)</td><td>Decide once on day zero; switching CSS strategy in week two is a day you cannot afford.</td></tr>
+      <tr><td><strong>Unit tests</strong></td><td class="keys">Vitest</td><td>Same runner both sides of the repo, and the fingerprint fixtures are the tests that matter.</td></tr>
+      <tr><td><strong>API tests</strong></td><td class="keys">Supertest + mongodb-memory-server</td><td>Real HTTP against a real Mongo with no Docker dependency in CI.</td></tr>
+      <tr><td><strong>Load test</strong></td><td class="keys">k6</td><td>Scripts are JavaScript and the JSON summary commits cleanly as evidence. <span class="dim">Not installed — <code>brew install k6</code>.</span></td></tr>
+      <tr><td><strong>Local infra</strong></td><td class="keys">Docker Compose</td><td>One command brings up Mongo and Redis at the versions you claim to support. <span class="dim">Not installed — OrbStack or Docker Desktop.</span></td></tr>
+      <tr><td><strong>CI</strong></td><td class="keys">GitHub Actions</td><td>Service containers for Mongo and Redis; a green badge is cheap credibility.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Language decision — make it on day 0 and never revisit</h3>
+  <p>Use TypeScript <em>only</em> if you are already fluent. The fingerprint module genuinely benefits — <code>Frame</code>, <code>ParsedTrace</code> and <code>Runtime</code> as types document the design better than prose does. But learning TS while shipping to a hard deadline is how projects die in week two. If you hesitate for more than a minute, write JavaScript with JSDoc typedefs on the fingerprint module only, and move on.</p>
+</section>
+
+<section id="arch">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Architecture</h2></div>
+  <p>One Express process. Do not split it. A monolith you can explain from memory beats microservices you narrate from a diagram. The only concurrency in the system is a single background interval that flushes view counters, and that one detail is the source of the most interesting scaling question in the whole project.</p>
+  <div class="panel">
+  <svg class="diag" viewBox="0 0 900 400" role="img" aria-label="Architecture: React client calls a single Express API, which reads through Redis for cache, counters, trending and rate limits, and reads and writes MongoDB for pastes, users and fingerprints. A background job flushes buffered view counts from Redis to MongoDB.">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+      </marker>
+    </defs>
+    <g style="color:var(--ink-mute)">
+      <!-- client -->
+      <rect x="8" y="150" width="152" height="94" rx="7" fill="var(--panel-2)" stroke="var(--rule)" stroke-width="1.5"></rect>
+      <text x="84" y="185" text-anchor="middle" fill="var(--ink)" font-family="Archivo,sans-serif" font-size="15" font-weight="700">React SPA</text>
+      <text x="84" y="205" text-anchor="middle" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10.5">Vite · CodeMirror</text>
+      <text x="84" y="223" text-anchor="middle" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10.5">static build</text>
+
+      <line x1="162" y1="197" x2="268" y2="197" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <text x="215" y="188" text-anchor="middle" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10">JSON</text>
+
+      <!-- api -->
+      <rect x="274" y="112" width="208" height="172" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"></rect>
+      <text x="378" y="140" text-anchor="middle" fill="var(--ink)" font-family="Archivo,sans-serif" font-size="15" font-weight="700">Express API</text>
+      <line x1="292" y1="152" x2="464" y2="152" stroke="var(--accent)" stroke-width="1" opacity="0.45"></line>
+      <text x="292" y="172" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">rate limit · auth</text>
+      <text x="292" y="192" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">routes · services</text>
+      <text x="292" y="212" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">fingerprint/ (pure)</text>
+      <text x="292" y="232" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">jobs/flushViews</text>
+      <text x="292" y="262" fill="var(--accent)" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">one process · one core</text>
+
+      <!-- redis -->
+      <line x1="486" y1="168" x2="596" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <text x="545" y="130" text-anchor="middle" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10">read-through</text>
+      <rect x="602" y="44" width="180" height="116" rx="7" fill="var(--panel-2)" stroke="var(--rule)" stroke-width="1.5"></rect>
+      <text x="618" y="70" fill="var(--ink)" font-family="Archivo,sans-serif" font-size="14" font-weight="700">Redis 7</text>
+      <text x="618" y="92" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">paste:{slug}</text>
+      <text x="618" y="110" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">views:{slug}</text>
+      <text x="618" y="128" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">trending:{hour}</text>
+      <text x="618" y="146" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">rl:{scope}:{id}</text>
+
+      <!-- mongo -->
+      <line x1="486" y1="232" x2="596" y2="282" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <text x="545" y="276" text-anchor="middle" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10">on miss</text>
+      <rect x="602" y="240" width="180" height="116" rx="7" fill="var(--panel-2)" stroke="var(--rule)" stroke-width="1.5"></rect>
+      <text x="618" y="266" fill="var(--ink)" font-family="Archivo,sans-serif" font-size="14" font-weight="700">MongoDB 7</text>
+      <text x="618" y="288" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">pastes</text>
+      <text x="618" y="306" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">users</text>
+      <text x="618" y="324" fill="var(--ink-soft)" font-family="JetBrains Mono,monospace" font-size="10.5">fingerprints</text>
+      <text x="618" y="344" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10">TTL sweeps expired</text>
+
+      <!-- flush -->
+      <path d="M 790 160 C 850 190 850 210 790 240" fill="none" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)" style="color:var(--ok)"></path>
+      <text x="884" y="204" text-anchor="end" fill="var(--ok)" font-family="JetBrains Mono,monospace" font-size="10">flush 30s</text>
+      <text x="884" y="219" text-anchor="end" fill="var(--ok)" font-family="JetBrains Mono,monospace" font-size="10">bulkWrite</text>
+
+      <text x="8" y="386" fill="var(--ink-mute)" font-family="JetBrains Mono,monospace" font-size="10">Redis is a cache, never the source of truth — every path must survive it being down.</text>
+    </g>
+  </svg>
+  </div>
+  <h3>The two request paths that matter</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Path</th><th>Sequence</th><th>Target</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Read a paste</strong><br><span class="dim keys">GET /api/pastes/:slug</span></td><td>rate-limit check → <code>GET paste:{slug}</code> → hit: return, set <code>X-Cache: HIT</code> → miss: Mongo <code>findOne({slug})</code> on the unique index, <code>SETEX</code> 1h → fire-and-forget <code>INCR views:{slug}</code> + <code>SADD views:dirty</code> + <code>ZINCRBY trending:{hour}</code></td><td>p99 &lt; 50 ms cached</td></tr>
+      <tr><td><strong>Create a paste</strong><br><span class="dim keys">POST /api/pastes</span></td><td>rate-limit → Zod validate → size cap → detect <code>kind</code> → if stacktrace: parse, normalize, hash → insert paste → atomic <code>upsert</code> on <code>fingerprints</code> with <code>$inc</code> → return slug</td><td>p99 &lt; 250 ms</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <span class="lbl">Decision that pays off in week three</span>
+    <p>Put the cache behind a single env flag, <code>CACHE_ENABLED</code>, from the first day you write the cache service. Your before/after benchmark then changes exactly one variable — same binary, same machine, same dataset, one boolean — instead of comparing two git branches and hoping nothing else moved. This is the difference between a number an interviewer believes and a number they poke holes in.</p>
+  </div>
+</section>
+
+<section id="tree">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Repository layout</h2></div>
+  <p>One repo, npm workspaces, two apps. The shape below exists to make one thing true: <code>fingerprint/</code> is a folder of pure functions with no database, no network and no Express. That is what makes it unit-testable against fixtures, and it is what you open first when someone asks to see the interesting code.</p>
+  <pre><code>snippet-share/
+├── docker-compose.yml           # mongo + redis + api, one command
+├── .env.example                 # every var, committed; .env never is
+├── package.json                 # npm workspaces root
+├── README.md                    # write the empty benchmark table on day 0
+│
+├── apps/
+│   ├── api/
+│   │   ├── src/
+│   │   │   ├── index.js             # bootstrap: connect deps, then listen
+│   │   │   ├── app.js               # builds the Express app, never listens
+│   │   │   ├── config/
+│   │   │   │   ├── env.js           # zod-parsed env, throws on boot if wrong
+│   │   │   │   ├── mongo.js         # connection + pool size
+│   │   │   │   └── redis.js         # ioredis client + lua registration
+│   │   │   ├── middleware/
+│   │   │   │   ├── requestId.js     # uuid per request, into every log line
+│   │   │   │   ├── auth.js          # required / optional variants
+│   │   │   │   ├── rateLimit.js     # factory: rateLimit({ key, limit, window })
+│   │   │   │   ├── validate.js      # zod schema -> 400 with field errors
+│   │   │   │   └── errorHandler.js  # the only place that formats errors
+│   │   │   ├── models/
+│   │   │   │   ├── User.js
+│   │   │   │   ├── Paste.js
+│   │   │   │   └── Fingerprint.js
+│   │   │   ├── routes/
+│   │   │   │   ├── auth.routes.js
+│   │   │   │   ├── paste.routes.js
+│   │   │   │   ├── error.routes.js
+│   │   │   │   └── meta.routes.js   # /health, /metrics
+│   │   │   ├── services/
+│   │   │   │   ├── authService.js
+│   │   │   │   ├── pasteService.js  # the only module that touches Paste
+│   │   │   │   ├── cacheService.js  # get/set/del + CACHE_ENABLED flag
+│   │   │   │   ├── viewCounter.js   # incr + dirty-set bookkeeping
+│   │   │   │   └── trending.js      # ZINCRBY / ZREVRANGE
+│   │   │   ├── fingerprint/         # ← pure. no I/O. the crown jewel.
+│   │   │   │   ├── index.js         # fingerprint(text) -> ParsedTrace | null
+│   │   │   │   ├── detect.js        # which runtime is this?
+│   │   │   │   ├── parsers/
+│   │   │   │   │   ├── node.js
+│   │   │   │   │   └── python.js
+│   │   │   │   ├── normalize.js     # ordered substitution rules
+│   │   │   │   ├── classify.js      # app frame vs vendor frame
+│   │   │   │   └── hash.js          # sha1 -> 16 hex chars
+│   │   │   ├── jobs/
+│   │   │   │   └── flushViews.js    # setInterval, guarded, graceful stop
+│   │   │   └── lua/
+│   │   │       └── slidingWindow.lua
+│   │   └── tests/
+│   │       ├── fixtures/traces/     # 20 real traces + expected-groups.json
+│   │       ├── unit/                # fingerprint, normalize, classify
+│   │       └── integration/         # supertest: auth, paste, rate limit
+│   │
+│   └── web/
+│       ├── src/
+│       │   ├── main.jsx
+│       │   ├── api/client.js        # fetch wrapper; queues on 401, refreshes once
+│       │   ├── routes/
+│       │   │   ├── NewPaste.jsx
+│       │   │   ├── ViewPaste.jsx
+│       │   │   ├── ErrorGroup.jsx   # "seen 41 times" + occurrence list
+│       │   │   ├── Trending.jsx
+│       │   │   └── MyPastes.jsx
+│       │   ├── components/
+│       │   │   ├── Editor.jsx       # CodeMirror, editable
+│       │   │   ├── CodeView.jsx     # CodeMirror, read-only
+│       │   │   ├── FrameList.jsx    # app frames bold, vendor frames dimmed
+│       │   │   └── CopyLink.jsx
+│       │   └── hooks/useAuth.js
+│       └── vite.config.js
+│
+├── bench/
+│   ├── seed.js                  # 5–10k realistic pastes, writes slugs.json
+│   ├── read.js                  # the k6 script, zipfian slug picker
+│   ├── create.js                # write-path k6 script
+│   └── results/
+│       ├── no-cache.json        # committed. this is evidence.
+│       └── with-redis.json
+│
+└── docs/
+    ├── architecture.md
+    ├── benchmark.md             # methodology + the filled table
+    └── failure-modes.md         # where it actually breaks</code></pre>
+  <div class="note">
+    <span class="lbl">Why app.js and index.js are separate</span>
+    <p><code>app.js</code> exports a configured Express app and never calls <code>listen</code>. That single split is what lets Supertest mount the real app in-process with no port, no race and no teardown flakiness. It costs you four lines and buys you an entire integration suite.</p>
+  </div>
+</section>
+
+<section id="data">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Data model and indexes</h2></div>
+
+  <h3>pastes</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="keys"><strong>slug</strong></td><td>string</td><td>nanoid(10), unique index, the public identifier</td></tr>
+      <tr><td class="keys">title</td><td>string</td><td>optional, 120 char cap</td></tr>
+      <tr><td class="keys">content</td><td>string</td><td>hard cap 1 MB; reject with 413 above it, checked before parsing</td></tr>
+      <tr><td class="keys">language</td><td>string</td><td>detected or user-set, one of five</td></tr>
+      <tr><td class="keys">kind</td><td>enum</td><td><code>code</code> | <code>log</code> | <code>stacktrace</code></td></tr>
+      <tr><td class="keys"><strong>fingerprint</strong></td><td>string</td><td>16 hex chars; <em>only present when parsing succeeded</em></td></tr>
+      <tr><td class="keys">parsed</td><td>object</td><td><code>{ runtime, errorType, message, normalizedMessage, frames[] }</code></td></tr>
+      <tr><td class="keys">authorId</td><td>ObjectId</td><td>null for anonymous — the common case</td></tr>
+      <tr><td class="keys">visibility</td><td>enum</td><td><code>public</code> | <code>unlisted</code> | <code>private</code></td></tr>
+      <tr><td class="keys">views</td><td>number</td><td>flushed from Redis in batches, never incremented per request</td></tr>
+      <tr><td class="keys">createdAt</td><td>Date</td><td>index, descending</td></tr>
+      <tr><td class="keys">expiresAt</td><td>Date</td><td>TTL index; null means never</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>users &amp; fingerprints</h3>
+  <p><strong>users</strong> — <code>email</code> unique, <code>passwordHash</code> (bcrypt cost 12), <code>createdAt</code>, <code>tokenVersion</code>. Bumping <code>tokenVersion</code> invalidates every outstanding refresh token for that user in one write, which is your answer to "JWTs can't be revoked."</p>
+  <p><strong>fingerprints</strong> — one document per unique error signature, with <code>_id</code> set to the hash itself so the upsert needs no secondary lookup. Fields: <code>errorType</code>, <code>normalizedMessage</code>, <code>topFrame</code>, <code>runtime</code>, <code>count</code>, <code>firstSeenAt</code>, <code>lastSeenAt</code>.</p>
+
+  <h3>Indexes — be able to justify every one out loud</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Index</th><th>Serves</th><th>The justification</th></tr></thead>
+    <tbody>
+      <tr><td class="keys">{ slug: 1 }<br><span class="dim">unique</span></td><td>Every paste read</td><td>The dominant query in the system. Unique also enforces slug collision safety, so the nanoid retry path is a caught duplicate-key error rather than a pre-check round trip.</td></tr>
+      <tr><td class="keys">{ fingerprint: 1,<br>&nbsp;&nbsp;createdAt: -1 }<br><span class="dim">partial</span></td><td>"All occurrences of this error, newest first"</td><td><strong>Equality before sort.</strong> Mongo seeks to the <code>fingerprint</code> prefix, and because entries are already stored <code>createdAt</code>-descending inside that prefix, results come back sorted straight out of the index — no in-memory SORT stage, no 32 MB sort limit to worry about. Reverse the order and the query can no longer seek; it scans the whole index.</td></tr>
+      <tr><td class="keys">{ createdAt: -1 }</td><td>Recent public pastes</td><td>Feed query, sorted-only, no equality predicate.</td></tr>
+      <tr><td class="keys">{ authorId: 1,<br>&nbsp;&nbsp;createdAt: -1 }</td><td>My pastes</td><td>Same equality-then-sort shape as the fingerprint index; also the index cursor position is your pagination cursor.</td></tr>
+      <tr><td class="keys">{ expiresAt: 1 }<br><span class="dim">TTL, 0s</span></td><td>Expiry</td><td>Mongo's background sweeper deletes expired pastes for you. No cron, no job, no bug. Say out loud that the sweeper runs about once a minute, so expiry is eventual, not instant.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <span class="lbl">Sparse vs partial — know the difference</span>
+    <p>Most pastes are plain code and have no fingerprint, so indexing all of them wastes space and cache residency. A <em>sparse</em> index skips documents where the field is absent. A <em>partial</em> index takes an arbitrary filter expression — <code>{ fingerprint: { $exists: true } }</code> — and is the modern, strictly more flexible option. Use partial, and be able to explain that sparse is the older special case of it. Then quote the size difference: run <code>db.pastes.stats().indexSizes</code> with and without, and put the number in your README.</p>
+  </div>
+  <div class="note warn">
+    <span class="lbl">Index hygiene</span>
+    <p>Declare indexes in the Mongoose schema, but do <em>not</em> rely on <code>autoIndex</code> in production — it builds on every boot. Set <code>autoIndex: false</code> and run a one-line <code>syncIndexes()</code> script as an explicit migration step. Verify each query with <code>.explain("executionStats")</code> and check for <code>IXSCAN</code>, not <code>COLLSCAN</code>, and for <code>totalKeysExamined</code> close to <code>nReturned</code>. Screenshot one explain output for the README.</p>
+  </div>
+</section>
+
+<section id="api">
+  <div class="sec-head"><span class="sec-num">05</span><h2>API surface</h2></div>
+  <p>Twelve endpoints. If you find yourself adding a thirteenth, check it against the scope guard first.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Endpoint</th><th>Auth</th><th>Limit</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td class="keys">POST /api/auth/register</td><td>—</td><td>5/h/IP</td><td>bcrypt cost 12, returns access token + sets refresh cookie</td></tr>
+      <tr><td class="keys">POST /api/auth/login</td><td>—</td><td>10/h/IP</td><td>Constant-ish response time on failure; never say which field was wrong</td></tr>
+      <tr><td class="keys">POST /api/auth/refresh</td><td>cookie</td><td>60/h/IP</td><td>Rotates the refresh token; rejects if <code>tokenVersion</code> has moved</td></tr>
+      <tr><td class="keys">POST /api/auth/logout</td><td>cookie</td><td>—</td><td>Clears cookie; <code>?all=true</code> bumps <code>tokenVersion</code></td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/auth/me</td><td>bearer</td><td>—</td><td>Current user, no password hash, ever</td></tr>
+      <tr><td class="keys">POST /api/pastes</td><td>optional</td><td>10/h anon<br>100/h user</td><td>Validate → size cap → fingerprint if parseable → insert → upsert fingerprint</td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/pastes/:slug</td><td>optional</td><td>300/min/IP</td><td>Cache read-through; private pastes require ownership; sets <code>X-Cache</code></td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/pastes/:slug/raw</td><td>optional</td><td>300/min/IP</td><td><code>text/plain</code> body, for <code>curl</code>. Cheap, and demos well.</td></tr>
+      <tr><td class="keys">DELETE /api/pastes/:slug</td><td>bearer</td><td>60/h/user</td><td>Owner only; deletes the cache key in the same handler</td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/me/pastes</td><td>bearer</td><td>120/h/user</td><td>Cursor pagination on <code>{ authorId, createdAt }</code> — never <code>skip</code></td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/errors/:fp</td><td>—</td><td>300/min/IP</td><td>Fingerprint summary: count, first seen, last seen, top frame</td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/errors/:fp/occurrences</td><td>—</td><td>300/min/IP</td><td>The compound-index query. Cursor paginated.</td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/api/trending</td><td>—</td><td>300/min/IP</td><td><code>ZREVRANGE</code> on the current hour bucket, hydrated from the paste cache</td></tr>
+      <tr><td class="keys">GET&nbsp;&nbsp;/health</td><td>—</td><td>—</td><td>Pings Mongo and Redis; returns 503 if Mongo is down, 200 with <code>degraded</code> if only Redis is</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Auth design, concretely</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Token</th><th>Lifetime</th><th>Stored</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Access</strong></td><td>15 min</td><td>In memory on the client, sent as <code>Authorization: Bearer</code></td><td>Short enough that revocation lag is tolerable; in memory rather than localStorage so an XSS cannot read it off disk</td></tr>
+      <tr><td><strong>Refresh</strong></td><td>7 days</td><td><code>httpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh</code></td><td>JavaScript cannot touch it, and the narrow path means it is not sent on every request</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Rotate the refresh token on every use. Carry <code>tokenVersion</code> in the refresh payload and compare it against the user document — that gives you instant global logout with one field and no denylist. The client wrapper must queue concurrent 401s and refresh exactly once, otherwise three parallel requests trigger three rotations and two of them lose the race.</p>
+  <div class="note warn">
+    <span class="lbl">The bcrypt detail worth knowing</span>
+    <p>Cost 12 is roughly 250 ms of deliberate CPU. Use the <em>async</em> API — it runs on libuv's threadpool, which defaults to four threads. That means five simultaneous logins queue, and a burst of thirty will visibly stall unrelated requests. Measure it once with <code>autocannon</code> against <code>/api/auth/login</code>, write the number down, and you have a genuinely sophisticated answer ready for "what happens under load?"</p>
+  </div>
+</section>
+
+<section id="fp">
+  <div class="sec-head"><span class="sec-num">06</span><h2>The fingerprint engine</h2></div>
+  <p>This is the part that makes the project not a clone of something else. Get it right and it carries the entire interview. Budget seven days for it and protect them.</p>
+  <p><strong>The problem:</strong> two people hit the same bug. Their traces differ in line numbers, absolute paths, timestamps, object ids, container hostnames and which library versions sit in the frames. A naive hash of the text groups nothing at all — every trace is unique, and the feature is worthless.</p>
+
+  <h3>Step 1 — detect the runtime</h3>
+  <p>Score the input against both shapes and take the winner, rather than committing on the first match. Ambiguous input returns <code>null</code> and the paste is stored as a plain log — failing to parse is a perfectly good outcome and must never throw.</p>
+  <pre><code>Node     at fnName (/srv/app/handlers/user.js:42:15)
+         at async Server.&lt;anonymous&gt; (node:internal/http:1420:9)
+
+Python   Traceback (most recent call last):
+           File "/srv/app/handlers/user.py", line 42, in get_user
+             return cache[user_id]</code></pre>
+
+  <h3>Step 2 — parse into structured frames</h3>
+  <p>Each frame becomes <code>{ file, line, col, function, isApp }</code>. The cases that will bite you, and that you should have a fixture for each of: <code>at async</code>, <code>at new ClassName</code>, <code>at Object.&lt;anonymous&gt;</code>, frames with no function name, <code>file://</code> URLs, <code>node:internal/*</code> paths, Windows drive letters, and — on the Python side — chained exceptions. When Python prints <em>"During handling of the above exception, another exception occurred"</em>, there are two tracebacks in the text and <strong>you want the last one</strong>, because that is the error that actually escaped.</p>
+
+  <h3>Step 3 — normalize the message</h3>
+  <p>Strip everything that varies between two occurrences of the same bug. <strong>Rule order matters</strong> — run the specific patterns before the general ones, or the bare-number rule will shred your UUIDs and timestamps before they are recognised.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>#</th><th>Replace</th><th>With</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ISO-8601 timestamps and epoch milliseconds</td><td class="keys">&lt;ts&gt;</td></tr>
+      <tr><td>2</td><td>UUIDs</td><td class="keys">&lt;uuid&gt;</td></tr>
+      <tr><td>3</td><td>24-char hex (Mongo ObjectIds)</td><td class="keys">&lt;oid&gt;</td></tr>
+      <tr><td>4</td><td>Hex addresses, <code>0x…</code></td><td class="keys">&lt;addr&gt;</td></tr>
+      <tr><td>5</td><td>URLs, then bare IP addresses</td><td class="keys">&lt;url&gt; &lt;ip&gt;</td></tr>
+      <tr><td>6</td><td>Email addresses</td><td class="keys">&lt;email&gt;</td></tr>
+      <tr><td>7</td><td>Absolute file paths</td><td class="keys">&lt;path&gt;</td></tr>
+      <tr><td>8</td><td>Quoted string literals, single and double</td><td class="keys">&lt;str&gt;</td></tr>
+      <tr><td>9</td><td>Hex or base64 runs of 16+ chars</td><td class="keys">&lt;hash&gt;</td></tr>
+      <tr><td>10</td><td>Remaining bare numbers</td><td class="keys">&lt;num&gt;</td></tr>
+      <tr><td>11</td><td>Collapse whitespace, trim, lowercase</td><td class="dim">—</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <pre><code>in   Cannot read property 'userId' of undefined at index 42
+out  cannot read property &lt;str&gt; of undefined at index &lt;num&gt;
+
+in   connect ETIMEDOUT 10.0.3.14:5432 after 30000ms
+out  connect etimedout &lt;ip&gt;:&lt;num&gt; after &lt;num&gt;ms</code></pre>
+
+  <h3>Step 4 — keep only application frames</h3>
+  <p>This is the key insight, and it is the sentence to say out loud in an interview: <strong>library frames differ between users; application frames identify the bug.</strong> A <code>TypeError</code> thrown from somewhere inside Express tells you nothing — half the internet has that frame. The first frame in <em>your</em> code tells you everything.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Runtime</th><th>Discard a frame when its path…</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Node</strong></td><td>contains <code>node_modules/</code>, starts with <code>node:</code> or <code>internal/</code>, is <code>&lt;anonymous&gt;</code>, or is a bundler runtime chunk</td></tr>
+      <tr><td><strong>Python</strong></td><td>contains <code>site-packages/</code> or <code>dist-packages/</code>, matches a stdlib path like <code>lib/python3.*/</code>, or is <code>&lt;frozen importlib._bootstrap&gt;</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note warn">
+    <span class="lbl">The edge case you will be asked about</span>
+    <p>What if <em>every</em> frame is vendor code — a crash entirely inside a library, with no application frame at all? Filtering leaves you nothing to hash. Fall back to the top three frames overall, and set a flag on the parsed object recording that you did. Having thought about this before being asked is worth more than the fix itself.</p>
+  </div>
+
+  <h3>Step 5 — hash</h3>
+  <pre><code>fingerprint = sha1(
+    errorType + "|" +
+    normalizedMessage + "|" +
+    topAppFrames.slice(0, 3)
+      .map(f =&gt; basename(f.file) + ":" + f.function)
+      .join("|")
+  ).slice(0, 16)</code></pre>
+  <p>Note what is deliberately <em>absent</em> from that input. No line numbers: adding an import at the top of a file shifts every line below it, and the same bug must still group after an unrelated edit. No absolute paths, only basenames: <code>/home/ani/app/user.js</code> and <code>/srv/prod/app/user.js</code> are the same file. No column numbers, no timestamps, no versions.</p>
+  <p>Sixteen hex characters is 64 bits. By the birthday bound you expect your first collision somewhere around four billion distinct error signatures, which is several orders of magnitude past anything this system will ever hold. Say that number rather than "it's probably fine."</p>
+
+  <h3>The write must be atomic</h3>
+  <pre><code>await Fingerprint.updateOne(
+  { _id: fp },
+  {
+    $inc:        { count: 1 },
+    $max:        { lastSeenAt: now },
+    $setOnInsert: { errorType, normalizedMessage, topFrame, runtime, firstSeenAt: now }
+  },
+  { upsert: true }
+);</code></pre>
+  <p>One round trip, no read-modify-write, no lost updates under concurrency. Two simultaneous upserts of a brand-new fingerprint can still race and produce a duplicate-key error on <code>_id</code> — catch code 11000 and retry once, at which point the document exists and the <code>$inc</code> path applies.</p>
+
+  <h3>The test suite that sells the project</h3>
+  <p>Collect twenty real stack traces — pull them from your own projects, from GitHub issues, from Stack Overflow. Save each as a fixture file alongside a label saying which group it belongs to. Then do not test them one at a time: test <strong>every pair</strong>.</p>
+  <pre><code>// 20 traces -> C(20,2) = 190 pairs
+// For each pair, assert: same group label  ⟺  same fingerprint
+
+              predicted same    predicted different
+actual same        TP                  FN   (missed a grouping)
+actual different   FP                  TN   (grouped two real bugs — worse)</code></pre>
+  <p>Report precision and recall over those 190 pairs, not a single accuracy percentage — and note in the README that <strong>false positives are the expensive error</strong>, because merging two genuinely different bugs hides one of them forever, while a missed grouping merely shows a duplicate. That framing is what separates a student answer from an engineer's.</p>
+  <div class="note">
+    <span class="lbl">Known limitation — state it before they find it</span>
+    <p>Because line numbers are excluded, two <em>different</em> errors thrown from the same function with the same message shape will collide into one group. That is a deliberate trade: it is the price of surviving ordinary code edits, and the alternative — including line numbers — breaks grouping on every commit. Leading with this trade-off is one of the strongest moments available to you in the interview.</p>
+  </div>
+</section>
+
+<section id="redis">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Redis keyspace</h2></div>
+  <p>Do not add Redis until week three, and only after you have measured life without it. The entire point is the before and after. When you do add it, design the keyspace on paper first.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Key</th><th>Type</th><th>TTL</th><th>Written by</th><th>Read by</th></tr></thead>
+    <tbody>
+      <tr><td class="keys">paste:{slug}</td><td>string (JSON)</td><td>3600 s</td><td>Read-through on miss; deleted on edit or delete</td><td>Every paste read</td></tr>
+      <tr><td class="keys">paste:{slug}</td><td>string <code>"null"</code></td><td>60 s</td><td>Negative cache on 404</td><td>Stops a bad-slug scan hammering Mongo</td></tr>
+      <tr><td class="keys">views:{slug}</td><td>string (int)</td><td>none</td><td><code>INCR</code> on every read</td><td>Flusher, and the display total</td></tr>
+      <tr><td class="keys">views:dirty</td><td>set</td><td>none</td><td><code>SADD</code> alongside each INCR</td><td>Flusher — this is what makes the flush O(changed)</td></tr>
+      <tr><td class="keys">trending:{yyyymmddHH}</td><td>sorted set</td><td>7200 s</td><td><code>ZINCRBY</code> on each read</td><td><code>ZREVRANGE key 0 19</code></td></tr>
+      <tr><td class="keys">rl:{scope}:{id}</td><td>zset or string</td><td>window</td><td>Lua script</td><td>Lua script</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Why the dirty set exists</h3>
+  <p>Without it, the flush job has to find which counters changed, and the only way to do that is to scan the keyspace. <code>KEYS views:*</code> is O(N) over <em>every key in the database</em> and blocks the single-threaded server while it runs — it is a production outage waiting for a quiet Tuesday. <code>SCAN</code> is safer but still walks everything. A dirty set makes the flush proportional to what actually changed. <strong>Never call <code>KEYS</code>. Be able to say why.</strong></p>
+
+  <h3>The flush job, and the bug everyone writes first</h3>
+  <p>The naive version reads the counter, writes it to Mongo, then deletes the key — and silently loses every view that arrived in between. The correct shape:</p>
+  <pre><code>const slugs = await redis.spop('views:dirty', 500);        // claim a batch
+const deltas = await Promise.all(
+  slugs.map(s =&gt; redis.getset(`views:${s}`, 0))             // atomic read-and-reset
+);
+
+try {
+  await Paste.bulkWrite(slugs.map((s, i) =&gt; ({
+    updateOne: { filter: { slug: s }, update: { $inc: { views: Number(deltas[i]) } } }
+  })), { ordered: false });
+} catch (err) {
+  // put the deltas back, or you have silently thrown away view counts
+  await Promise.all(slugs.map((s, i) =&gt; redis.incrby(`views:${s}`, Number(deltas[i]))));
+  await redis.sadd('views:dirty', ...slugs);
+  throw err;
+}</code></pre>
+  <p>Increments arriving between the <code>GETSET</code> and the Mongo write are not lost — they accumulate on the freshly zeroed key and get picked up next cycle. The only real hazard is the Mongo write failing after you have already zeroed, which is exactly what the catch block repairs.</p>
+  <p>One more detail: the number you display is <code>mongo.views + redis.views:{slug}</code>. Show only the Mongo value and the count visibly jumps backwards right after each flush, which looks broken to anyone watching.</p>
+
+  <h3>Rate limiting — sliding window in Lua</h3>
+  <p>The check and the increment must be one atomic operation, or two concurrent requests both read "9 of 10" and both proceed. A Lua script runs atomically inside Redis, which is the whole reason it is here.</p>
+  <pre><code>-- KEYS[1] window key   ARGV: now_ms, window_ms, limit, unique_id
+redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, ARGV[1] - ARGV[2])
+local used = redis.call('ZCARD', KEYS[1])
+if used &gt;= tonumber(ARGV[3]) then
+  return { 0, used }
+end
+redis.call('ZADD',   KEYS[1], ARGV[1], ARGV[1] .. '-' .. ARGV[4])
+redis.call('PEXPIRE', KEYS[1], ARGV[2])
+return { 1, used + 1 }</code></pre>
+  <div class="note">
+    <span class="lbl">The trade-off to raise before they do</span>
+    <p>A sliding-window <em>log</em> stores one sorted-set member per request in the window — precise, but at 300 reads/min/IP that is 300 members held per active IP, and memory scales with traffic. So use it only where precision matters and volume is low: the create endpoints. For the 300/min read limit, use a fixed-window <code>INCR</code> plus <code>EXPIRE</code> — two commands, constant memory, and the only cost is a burst allowed at a window boundary, which for read traffic is irrelevant. Picking different algorithms for different endpoints, and knowing why, is a much better answer than using one everywhere.</p>
+  </div>
+  <div class="note warn">
+    <span class="lbl">Decide the failure posture now</span>
+    <p>Redis goes down. Does the limiter fail open or closed? Recommended: <strong>fail open on reads</strong> — a cache outage should not take the site down — and <strong>fail closed on anonymous creates</strong>, since that endpoint is the actual abuse target. Log loudly either way. Having a deliberate answer here reads as operational maturity; "I hadn't thought about it" does not.</p>
+  </div>
+  <h3>The one-sentence justification for each Redis use</h3>
+  <ul class="scope in"><li style="list-style:none;padding-left:19px"><strong>Cache:</strong> "Paste reads were N ms at p99 against Mongo; cached they are M ms, at a K% hit rate under a realistic skewed load."</li>
+    <li style="list-style:none;padding-left:19px"><strong>Counters:</strong> "A Mongo write per page view does not scale; buffering in Redis cut write ops/sec from X to Y."</li>
+    <li style="list-style:none;padding-left:19px"><strong>Trending:</strong> "Computing it in Mongo is an aggregation with a sort over a growing collection at Z ms; a sorted set is O(log N) to write and O(log N + M) to read."</li>
+    <li style="list-style:none;padding-left:19px"><strong>Rate limit:</strong> "Anonymous creation is an open write endpoint; the check and increment must be atomic, which is why it's a Lua script."</li></ul>
+  <p>Fill in every letter with a number you measured. That sentence, four times, is most of section twelve.</p>
+</section>
+
+<!-- ============ PHASES ============ -->
+
+<section id="p0">
+  <div class="sec-head"><span class="sec-num">P0</span><h2>Decisions and pre-flight</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P0</span><h3>Decide everything you will otherwise re-litigate at 1am</h3><span class="days">Day 0 · half a day</span><span class="prog" data-prog>0 / 9</span></div>
+    <div class="ph-body">
+      <p class="goal">Nothing here is code. All of it is decisions that cost an hour today and three days if deferred. Your machine is missing Docker and k6 — fix that before it blocks you on day 15.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t0-1"><span class="tag ops">ops</span><label for="t0-1">Install Docker Desktop or OrbStack, and <code>brew install k6</code>. Neither is present on this machine.</label></li>
+        <li><input type="checkbox" data-task id="t0-2"><span class="tag">decide</span><label for="t0-2">Name the project. A real name beats <code>paste-app</code> on a resume.</label></li>
+        <li><input type="checkbox" data-task id="t0-3"><span class="tag">decide</span><label for="t0-3">JavaScript or TypeScript. Write the answer in the README. Never revisit it.</label></li>
+        <li><input type="checkbox" data-task id="t0-4"><span class="tag">decide</span><label for="t0-4">Tailwind or plain CSS. Same rule.</label></li>
+        <li><input type="checkbox" data-task id="t0-5"><span class="tag ops">ops</span><label for="t0-5">Create the repo, push an empty commit, enable Actions.</label></li>
+        <li><input type="checkbox" data-task id="t0-6"><span class="tag ops">ops</span><label for="t0-6">Write the README skeleton <em>now</em>, including the empty benchmark table. An empty table you committed on day zero is a promise you will keep.</label></li>
+        <li><input type="checkbox" data-task id="t0-7"><span class="tag ops">ops</span><label for="t0-7">Start collecting stack traces today. Keep a scratch file. Twenty real traces by day 8 is hard if you begin on day 8.</label></li>
+        <li><input type="checkbox" data-task id="t0-8"><span class="tag">decide</span><label for="t0-8">Create the accounts you need on day 19 — Render or Railway, MongoDB Atlas, Upstash — so signup friction is not on the critical path.</label></li>
+        <li><input type="checkbox" data-task id="t0-9"><span class="tag">plan</span><label for="t0-9">Block the 21 days in a calendar. Mark day 14 and day 19 as immovable gates.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate</span><p>Every decision above is written down somewhere you will see it again. <code>docker -v</code> and <code>k6 version</code> both print something.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p1">
+  <div class="sec-head"><span class="sec-num">P1</span><h2>Skeleton and infrastructure</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P1</span><h3>A process that boots, connects, and tells you it's alive</h3><span class="days">Days 1–2</span><span class="prog" data-prog>0 / 10</span></div>
+    <div class="ph-body">
+      <p class="goal">Boring, and the foundation for everything. The one non-obvious task here is the throwaway deploy — doing it on day 2 rather than day 19 converts your scariest unknown into a solved problem while you still have slack.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t1-1"><span class="tag ops">ops</span><label for="t1-1">npm workspaces root, <code>apps/api</code> and <code>apps/web</code>, ESLint + Prettier, <code>.env.example</code> committed.</label></li>
+        <li><input type="checkbox" data-task id="t1-2"><span class="tag ops">ops</span><label for="t1-2"><code>docker-compose.yml</code> with mongo:7, redis:7 and the api, plus named volumes so data survives a restart.</label></li>
+        <li><input type="checkbox" data-task id="t1-3"><span class="tag api">api</span><label for="t1-3"><code>config/env.js</code> — parse <code>process.env</code> with Zod and throw on boot if anything is missing. Never read <code>process.env</code> anywhere else.</label></li>
+        <li><input type="checkbox" data-task id="t1-4"><span class="tag api">api</span><label for="t1-4">Split <code>app.js</code> (builds the app) from <code>index.js</code> (connects, then listens). This is what makes Supertest painless later.</label></li>
+        <li><input type="checkbox" data-task id="t1-5"><span class="tag api">api</span><label for="t1-5">Mongo and Redis connections with retry, plus graceful shutdown on SIGTERM — drain the server, stop the flusher, close both clients.</label></li>
+        <li><input type="checkbox" data-task id="t1-6"><span class="tag api">api</span><label for="t1-6">pino + pino-http with a per-request id echoed in the <code>X-Request-Id</code> header.</label></li>
+        <li><input type="checkbox" data-task id="t1-7"><span class="tag api">api</span><label for="t1-7">The single <code>errorHandler</code> middleware and an <code>AppError</code> class. Every error response is shaped here and nowhere else.</label></li>
+        <li><input type="checkbox" data-task id="t1-8"><span class="tag api">api</span><label for="t1-8"><code>GET /health</code> that actually pings both stores, plus <code>helmet</code> and a CORS allowlist.</label></li>
+        <li><input type="checkbox" data-task id="t1-9"><span class="tag ops">ops</span><label for="t1-9">GitHub Actions: mongo + redis service containers, lint and test on push.</label></li>
+        <li><input type="checkbox" data-task id="t1-10"><span class="tag ops">ops</span><label for="t1-10"><strong>Throwaway deploy.</strong> Push the health-check-only API to Render today. Find the TLS, IP-allowlist and build surprises now, not on day 19.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate</span><p><code>docker compose up</code> from a clean clone gives you a green <code>/health</code>. CI is green. A deployed URL returns <code>{"status":"ok"}</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p2">
+  <div class="sec-head"><span class="sec-num">P2</span><h2>Identity</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P2</span><h3>Auth that you can defend, not auth that is clever</h3><span class="days">Days 2–3</span><span class="prog" data-prog>0 / 8</span></div>
+    <div class="ph-body">
+      <p class="goal">Two days, and not one hour more. No OAuth, no email verification, no password reset flow. Anonymous use is the primary path anyway — auth exists so that "my pastes" and ownership-based delete are possible.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t2-1"><span class="tag api">api</span><label for="t2-1">User model: <code>email</code> unique, <code>passwordHash</code>, <code>tokenVersion</code>, <code>createdAt</code>.</label></li>
+        <li><input type="checkbox" data-task id="t2-2"><span class="tag api">api</span><label for="t2-2">Register and login. bcrypt cost 12, async API. Identical error message and similar timing for both failure modes.</label></li>
+        <li><input type="checkbox" data-task id="t2-3"><span class="tag api">api</span><label for="t2-3">Access token, 15 min. Refresh token, 7 days, in an httpOnly Secure SameSite=Lax cookie scoped to the refresh path.</label></li>
+        <li><input type="checkbox" data-task id="t2-4"><span class="tag api">api</span><label for="t2-4">Refresh rotation with <code>tokenVersion</code> checking; <code>logout?all=true</code> bumps the version and kills every session.</label></li>
+        <li><input type="checkbox" data-task id="t2-5"><span class="tag api">api</span><label for="t2-5">Two auth middlewares: <code>requireAuth</code> and <code>optionalAuth</code>. Most paste routes need the second.</label></li>
+        <li><input type="checkbox" data-task id="t2-6"><span class="tag api">api</span><label for="t2-6">Never serialise <code>passwordHash</code> — strip it in a schema transform, not per-route.</label></li>
+        <li><input type="checkbox" data-task id="t2-7"><span class="tag api">api</span><label for="t2-7">Integration tests: register, login, refresh, rotation, expired token, tampered signature, revoked version.</label></li>
+        <li><input type="checkbox" data-task id="t2-8"><span class="tag ops">ops</span><label for="t2-8">Benchmark <code>/api/auth/login</code> once with autocannon. Record the number — it is your threadpool answer later.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate</span><p>The full auth integration suite passes. A token 15 minutes old is rejected, and refresh issues a working replacement without the client noticing.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p3">
+  <div class="sec-head"><span class="sec-num">P3</span><h2>Pastes — the core product</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P3</span><h3>Create, read, delete, expire</h3><span class="days">Days 3–5</span><span class="prog" data-prog>0 / 10</span></div>
+    <div class="ph-body">
+      <p class="goal">The product. Everything after this is either the differentiator or the engineering story; this is the thing they sit on top of. Get the indexes right now, because retrofitting them once you have seeded ten thousand documents is slower and less fun.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t3-1"><span class="tag api">api</span><label for="t3-1">Paste schema with every field from section 04, and all five indexes declared.</label></li>
+        <li><input type="checkbox" data-task id="t3-2"><span class="tag api">api</span><label for="t3-2"><code>autoIndex: false</code> plus a <code>syncIndexes()</code> migration script wired into an npm script.</label></li>
+        <li><input type="checkbox" data-task id="t3-3"><span class="tag api">api</span><label for="t3-3">Slug generation with nanoid(10), and a single retry on duplicate-key 11000.</label></li>
+        <li><input type="checkbox" data-task id="t3-4"><span class="tag api">api</span><label for="t3-4">Create: Zod validation, 1 MB size cap returning 413, language detection across five languages, anonymous allowed.</label></li>
+        <li><input type="checkbox" data-task id="t3-5"><span class="tag api">api</span><label for="t3-5">Read by slug, plus <code>/raw</code> as <code>text/plain</code>. Private pastes 404 for non-owners — 404, not 403, so you leak nothing.</label></li>
+        <li><input type="checkbox" data-task id="t3-6"><span class="tag api">api</span><label for="t3-6">Delete with ownership check. Anonymous pastes cannot be deleted; say so in the UI at creation time.</label></li>
+        <li><input type="checkbox" data-task id="t3-7"><span class="tag api">api</span><label for="t3-7">TTL expiry: accept 1h / 1d / 1w / never, set <code>expiresAt</code>, confirm the sweeper removes documents.</label></li>
+        <li><input type="checkbox" data-task id="t3-8"><span class="tag api">api</span><label for="t3-8"><code>/api/me/pastes</code> with cursor pagination on <code>{ authorId, createdAt }</code>. Never <code>skip</code> — say why.</label></li>
+        <li><input type="checkbox" data-task id="t3-9"><span class="tag api">api</span><label for="t3-9">Build <code>cacheService</code> now as a pass-through stub honouring <code>CACHE_ENABLED</code>. Week 3 fills in the body and touches nothing else.</label></li>
+        <li><input type="checkbox" data-task id="t3-10"><span class="tag ops">ops</span><label for="t3-10">Run <code>.explain("executionStats")</code> on all three read queries. Confirm IXSCAN. Save the output into <code>docs/</code>.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate</span><p>Every paste query is an index scan, verified by explain, not assumed. An expiring paste actually disappears.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p4">
+  <div class="sec-head"><span class="sec-num">P4</span><h2>The web client</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P4</span><h3>Five screens, then stop</h3><span class="days">Days 5–7</span><span class="prog" data-prog>0 / 8</span></div>
+    <div class="ph-body">
+      <p class="goal">Frontend polish is the most seductive way to lose a week. Five screens, one consistent look, no animation budget, no design system. It has to look deliberate, not beautiful.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t4-1"><span class="tag web">web</span><label for="t4-1">Vite + React + Router. Dev proxy to the API so there is no CORS friction locally.</label></li>
+        <li><input type="checkbox" data-task id="t4-2"><span class="tag web">web</span><label for="t4-2"><code>api/client.js</code>: attaches the bearer token, and on 401 queues concurrent requests while refreshing exactly once.</label></li>
+        <li><input type="checkbox" data-task id="t4-3"><span class="tag web">web</span><label for="t4-3">New paste screen — CodeMirror 6, language picker, expiry picker, visibility picker.</label></li>
+        <li><input type="checkbox" data-task id="t4-4"><span class="tag web">web</span><label for="t4-4">View paste — read-only CodeMirror, copy-link button, raw link, view count, expiry countdown.</label></li>
+        <li><input type="checkbox" data-task id="t4-5"><span class="tag web">web</span><label for="t4-5">Login / register, and My Pastes with cursor paging.</label></li>
+        <li><input type="checkbox" data-task id="t4-6"><span class="tag web">web</span><label for="t4-6">Real empty, loading and error states. A 404 slug shows a useful page, not a blank screen.</label></li>
+        <li><input type="checkbox" data-task id="t4-7"><span class="tag web">web</span><label for="t4-7">Responsive down to phone width. You will demo this on a phone at some point.</label></li>
+        <li><input type="checkbox" data-task id="t4-8"><span class="tag ops">ops</span><label for="t4-8">Serve the built <code>web/dist</code> from Express in production, so deployment is one service, not two.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate — the week 1 milestone</span><p>You paste something, copy the link, open it in an incognito window, and it renders. <strong>Do not start week 2 until this is true end to end.</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p5">
+  <div class="sec-head"><span class="sec-num">P5</span><h2>The fingerprint engine</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P5</span><h3>The week that makes the project worth talking about</h3><span class="days">Days 8–14</span><span class="prog" data-prog>0 / 12</span></div>
+    <div class="ph-body">
+      <p class="goal">Build section 06. Write the tests first — the fixture suite is both the specification and the artifact you show people. Keep every module in <code>fingerprint/</code> free of database access, network calls and Express; purity is what makes it testable and what makes it presentable.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t5-1"><span class="tag api">api</span><label for="t5-1">Collect and commit 20 real traces as fixtures, with an <code>expected-groups.json</code> label file.</label></li>
+        <li><input type="checkbox" data-task id="t5-2"><span class="tag api">api</span><label for="t5-2">Write the 190-pair grouping test <em>before</em> the parser. Watch it fail. It is your progress bar for the week.</label></li>
+        <li><input type="checkbox" data-task id="t5-3"><span class="tag api">api</span><label for="t5-3"><code>detect.js</code> — score both runtimes, return the winner or null. Never throws.</label></li>
+        <li><input type="checkbox" data-task id="t5-4"><span class="tag api">api</span><label for="t5-4"><code>parsers/node.js</code> — handle <code>async</code>, <code>new X</code>, anonymous, <code>node:internal</code>, <code>file://</code>, missing function names.</label></li>
+        <li><input type="checkbox" data-task id="t5-5"><span class="tag api">api</span><label for="t5-5"><code>parsers/python.js</code> — including chained exceptions; take the <em>last</em> traceback block.</label></li>
+        <li><input type="checkbox" data-task id="t5-6"><span class="tag api">api</span><label for="t5-6"><code>normalize.js</code> — the eleven ordered rules, each with its own unit test.</label></li>
+        <li><input type="checkbox" data-task id="t5-7"><span class="tag api">api</span><label for="t5-7"><code>classify.js</code> — app vs vendor frames, plus the all-vendor fallback path.</label></li>
+        <li><input type="checkbox" data-task id="t5-8"><span class="tag api">api</span><label for="t5-8"><code>hash.js</code> — sha1 over type, normalized message and top three app frames as basename:function.</label></li>
+        <li><input type="checkbox" data-task id="t5-9"><span class="tag api">api</span><label for="t5-9">Wire into create: parse, set <code>kind</code>, store <code>parsed</code>, atomic upsert into <code>fingerprints</code> with 11000 retry.</label></li>
+        <li><input type="checkbox" data-task id="t5-10"><span class="tag api">api</span><label for="t5-10"><code>/api/errors/:fp</code> and <code>/occurrences</code>, the latter proving the compound index earns its place.</label></li>
+        <li><input type="checkbox" data-task id="t5-11"><span class="tag web">web</span><label for="t5-11">Error view: parsed frames rendered, app frames emphasised and vendor frames dimmed, a "seen 41 times" badge linking to the occurrence list.</label></li>
+        <li><input type="checkbox" data-task id="t5-12"><span class="tag ops">ops</span><label for="t5-12">Record precision and recall over the 190 pairs in the README. Report the honest number.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate — the week 2 milestone</span><p>Paste the same error twice, from different machines, with different absolute paths and shifted line numbers. They group, and the badge increments. If the pairwise score is above about 85%, stop tuning and move on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p6">
+  <div class="sec-head"><span class="sec-num">P6</span><h2>Measure, cache, re-measure</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P6</span><h3>The engineering story, in the only order that produces one</h3><span class="days">Days 15–19</span><span class="prog" data-prog>0 / 12</span></div>
+    <div class="ph-body">
+      <p class="goal">Measure first. A cache added before a baseline is a cache with no story attached. The sequence below is the deliverable, not the Redis code.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t6-1"><span class="tag ops">ops</span><label for="t6-1"><code>bench/seed.js</code> — 5–10k realistic pastes across a realistic mix of kinds and sizes, writing <code>slugs.json</code>.</label></li>
+        <li><input type="checkbox" data-task id="t6-2"><span class="tag ops">ops</span><label for="t6-2">Write the k6 read script with the zipfian picker. Warm up 30 seconds and discard it.</label></li>
+        <li><input type="checkbox" data-task id="t6-3"><span class="tag ops">ops</span><label for="t6-3"><strong>Baseline run</strong> with <code>CACHE_ENABLED=false</code>. Save the raw JSON to <code>bench/results/no-cache.json</code> and commit it.</label></li>
+        <li><input type="checkbox" data-task id="t6-4"><span class="tag ops">ops</span><label for="t6-4">Record Mongo ops/sec during the baseline via <code>mongostat</code> or <code>db.serverStatus().opcounters</code>.</label></li>
+        <li><input type="checkbox" data-task id="t6-5"><span class="tag api">api</span><label for="t6-5">Fill in <code>cacheService</code>: read-through, 1h TTL with jitter, delete on write, negative cache for 404s, <code>X-Cache</code> header.</label></li>
+        <li><input type="checkbox" data-task id="t6-6"><span class="tag api">api</span><label for="t6-6">Wrap every cache call so a Redis failure logs and falls through to Mongo. Prove it by killing the container mid-test.</label></li>
+        <li><input type="checkbox" data-task id="t6-7"><span class="tag api">api</span><label for="t6-7">View counter: <code>INCR</code> plus dirty set, and the flush job with the repair-on-failure path from section 07.</label></li>
+        <li><input type="checkbox" data-task id="t6-8"><span class="tag api">api</span><label for="t6-8">Display total = Mongo views + pending Redis delta, so the count never goes backwards.</label></li>
+        <li><input type="checkbox" data-task id="t6-9"><span class="tag api">api</span><label for="t6-9">Trending: <code>ZINCRBY</code> per read into an hour bucket with a 2h TTL, <code>ZREVRANGE</code> to read. Measure the Mongo aggregation alternative once so you have the comparison number.</label></li>
+        <li><input type="checkbox" data-task id="t6-10"><span class="tag api">api</span><label for="t6-10">Rate limiting: Lua sliding window on creates, fixed-window INCR on reads, with <code>X-RateLimit-*</code> headers and 429 responses.</label></li>
+        <li><input type="checkbox" data-task id="t6-11"><span class="tag ops">ops</span><label for="t6-11"><strong>Identical re-run</strong> — same machine, same script, same dataset, <code>CACHE_ENABLED=true</code>. Commit <code>with-redis.json</code>.</label></li>
+        <li><input type="checkbox" data-task id="t6-12"><span class="tag ops">ops</span><label for="t6-12">Then push until it breaks. Ramp past 200 VUs and find the actual ceiling. Write down what failed first.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate</span><p>Two committed k6 result files, a filled table, and a written sentence naming the component that fails first under load.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="p7">
+  <div class="sec-head"><span class="sec-num">P7</span><h2>Ship and defend</h2></div>
+  <div class="phase">
+    <div class="ph-head"><span class="ph-num">P7</span><h3>A live URL and a README that does the talking</h3><span class="days">Days 19–21</span><span class="prog" data-prog>0 / 9</span></div>
+    <div class="ph-body">
+      <p class="goal">The deploy should be uneventful because you already did one on day 2. Most of these three days is writing — and the writing is what a recruiter actually reads.</p>
+      <ul class="tasks">
+        <li><input type="checkbox" data-task id="t7-1"><span class="tag ops">ops</span><label for="t7-1">Deploy the real service. Atlas free tier, Upstash Redis, Render or Railway for the app.</label></li>
+        <li><input type="checkbox" data-task id="t7-2"><span class="tag ops">ops</span><label for="t7-2">Production config: <code>rediss://</code> TLS for Upstash, Atlas network access, secrets in the dashboard and never in git.</label></li>
+        <li><input type="checkbox" data-task id="t7-3"><span class="tag ops">ops</span><label for="t7-3">Seed a few hundred demo pastes with real grouped errors, so the live site is not an empty shell.</label></li>
+        <li><input type="checkbox" data-task id="t7-4"><span class="tag ops">ops</span><label for="t7-4">Smoke test the deployed URL from a phone on cellular. Incognito, cold.</label></li>
+        <li><input type="checkbox" data-task id="t7-5"><span class="tag ops">ops</span><label for="t7-5">README: the one-line pitch, a screenshot, the architecture diagram, the benchmark table, the failure mode, and how to run it locally in one command.</label></li>
+        <li><input type="checkbox" data-task id="t7-6"><span class="tag ops">ops</span><label for="t7-6"><code>docs/benchmark.md</code> — full methodology, hardware, dataset size, and both raw outputs linked.</label></li>
+        <li><input type="checkbox" data-task id="t7-7"><span class="tag ops">ops</span><label for="t7-7"><code>docs/failure-modes.md</code> — where it breaks, at what load, and what you would change.</label></li>
+        <li><input type="checkbox" data-task id="t7-8"><span class="tag">prep</span><label for="t7-8">Write out the twelve answers in section 12 in your own words. Say them out loud once.</label></li>
+        <li><input type="checkbox" data-task id="t7-9"><span class="tag">prep</span><label for="t7-9">Do a 40-minute dry run against your own project with someone else asking. Note every question you fumbled.</label></li>
+      </ul>
+      <div class="note gate"><span class="lbl">Exit gate — done</span><p>A stranger opens the URL, pastes a Node stack trace, and sees it group with an existing one. The README has real numbers in it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="test">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Testing strategy</h2></div>
+  <p>Not high coverage — <em>targeted</em> coverage. One part of this codebase deserves exhaustive tests and the rest deserves enough to stop regressions.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Level</th><th>Tooling</th><th>What it covers</th><th>Bar</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Unit</strong></td><td>Vitest</td><td>The entire <code>fingerprint/</code> module: detection, both parsers, all eleven normalization rules, frame classification, hashing, and the 190-pair grouping matrix</td><td>Near total. This is the project.</td></tr>
+      <tr><td><strong>Integration</strong></td><td>Supertest + mongodb-memory-server + real Redis in CI</td><td>Auth lifecycle, paste CRUD, ownership rules, size cap, TTL, rate-limit 429s, cache hit and miss headers</td><td>Every endpoint, happy path plus its main failure</td></tr>
+      <tr><td><strong>Resilience</strong></td><td>Manual, documented</td><td>Kill Redis mid-request and confirm reads still serve from Mongo; kill Mongo and confirm <code>/health</code> reports 503</td><td>Once, recorded in docs</td></tr>
+      <tr><td><strong>Load</strong></td><td>k6</td><td>The read path under skewed traffic, plus a ramp to find the ceiling</td><td>Both runs committed</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <span class="lbl">Tests worth writing specifically because they will be asked about</span>
+    <p>A fingerprint that stays stable when line numbers shift. A fingerprint that stays stable across different absolute paths. Two genuinely different bugs that must <em>not</em> group. A trace with zero application frames. A Python trace with chained exceptions. A malformed input that returns null rather than throwing. Each of those is a one-line assertion and a ready-made answer.</p>
+  </div>
+</section>
+
+<section id="bench">
+  <div class="sec-head"><span class="sec-num">09</span><h2>The benchmark</h2></div>
+  <p>This becomes a line on your resume, so the methodology has to survive scrutiny. The rules below are what make the numbers honest — and an interviewer who knows load testing will check for exactly these.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th>#</th><th>Rule</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Seed 5–10k pastes first</td><td>Benchmarking an empty database proves nothing — everything fits in RAM and Mongo looks infinitely fast.</td></tr>
+      <tr><td>2</td><td>Use a skewed access distribution</td><td>Real traffic is skewed; 80% of reads hitting 20% of pastes is roughly right. Uniform random access makes caching look <em>worse</em> than it is, and an interviewer will ask which you used.</td></tr>
+      <tr><td>3</td><td>Change exactly one variable</td><td>Same machine, same script, same dataset, same binary — only <code>CACHE_ENABLED</code> moves.</td></tr>
+      <tr><td>4</td><td>Warm up, then measure</td><td>Discard the first 30 seconds. JIT, connection pools and the OS page cache all need to settle.</td></tr>
+      <tr><td>5</td><td>Run locally, not on the free tier</td><td>Render and Atlas free tiers are CPU-throttled and shared, so you would be measuring someone else's noise. Benchmark on your own machine; deploy for the demo.</td></tr>
+      <tr><td>6</td><td>Commit the raw output</td><td>Both k6 JSON summaries go in the repo. Numbers with evidence behind them read completely differently.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <pre><code>import http from 'k6/http';
+import { check } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '30s', target: 50 },   // warm-up — discarded
+    { duration: '2m',  target: 200 },
+    { duration: '30s', target: 0 },
+  ],
+  thresholds: {
+    http_req_duration: ['p(99)&lt;500'],
+    http_req_failed:   ['rate&lt;0.01'],
+  },
+};
+
+const SLUGS = JSON.parse(open('./slugs.json'));
+
+// Zipfian-ish: 80% of traffic hits 20% of pastes
+function pickSlug() {
+  const hot  = Math.random() &lt; 0.8;
+  const pool = hot ? Math.floor(SLUGS.length * 0.2) : SLUGS.length;
+  return SLUGS[Math.floor(Math.random() * pool)];
+}
+
+export default function () {
+  const res = http.get(`${__ENV.BASE}/api/pastes/${pickSlug()}`);
+  check(res, { 'status 200': (r) =&gt; r.status === 200 });
+}</code></pre>
+  <h3>Fill this in on day 19 — it saves as you type</h3>
+  <div class="tw">
+  <table class="bench">
+    <thead><tr><th>Metric</th><th>No cache</th><th>With Redis</th><th>Delta</th></tr></thead>
+    <tbody>
+      <tr><td>p50</td><td><input data-bench id="b-p50-a" placeholder="ms"></td><td><input data-bench id="b-p50-b" placeholder="ms"></td><td><input data-bench id="b-p50-d" placeholder="—"></td></tr>
+      <tr><td>p95</td><td><input data-bench id="b-p95-a" placeholder="ms"></td><td><input data-bench id="b-p95-b" placeholder="ms"></td><td><input data-bench id="b-p95-d" placeholder="—"></td></tr>
+      <tr><td>p99</td><td><input data-bench id="b-p99-a" placeholder="ms"></td><td><input data-bench id="b-p99-b" placeholder="ms"></td><td><input data-bench id="b-p99-d" placeholder="—"></td></tr>
+      <tr><td>req/sec</td><td><input data-bench id="b-rps-a" placeholder="rps"></td><td><input data-bench id="b-rps-b" placeholder="rps"></td><td><input data-bench id="b-rps-d" placeholder="—"></td></tr>
+      <tr><td>error rate</td><td><input data-bench id="b-err-a" placeholder="%"></td><td><input data-bench id="b-err-b" placeholder="%"></td><td><input data-bench id="b-err-d" placeholder="—"></td></tr>
+      <tr><td>cache hit rate</td><td class="dim">n/a</td><td><input data-bench id="b-hit-b" placeholder="%"></td><td class="dim">—</td></tr>
+      <tr><td>Mongo ops/sec</td><td><input data-bench id="b-mop-a" placeholder="ops"></td><td><input data-bench id="b-mop-b" placeholder="ops"></td><td><input data-bench id="b-mop-d" placeholder="—"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Record the test configuration directly beneath the table: machine and CPU, dataset size, virtual user count, duration, and the access distribution. A table without its configuration is a table nobody can evaluate.</p>
+  <div class="note warn">
+    <span class="lbl">Numbers you measured beat big numbers you can't defend</span>
+    <p>If your honest result is 120 ms down to 25 ms, write 120 ms down to 25 ms. A modest, reproducible improvement you can explain in detail is far more convincing than an impressive figure that falls apart under one follow-up question.</p>
+  </div>
+</section>
+
+<section id="deploy">
+  <div class="sec-head"><span class="sec-num">10</span><h2>Deployment</h2></div>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Component</th><th>Where</th><th>The gotcha that will cost you an hour</th></tr></thead>
+    <tbody>
+      <tr><td><strong>API + static client</strong></td><td>Render or Railway, from the Dockerfile</td><td>Free instances sleep and cold-start in tens of seconds. Fine for a demo, fatal for a benchmark — never measure here.</td></tr>
+      <tr><td><strong>MongoDB</strong></td><td>Atlas M0</td><td>Network access must allow your host's egress; Render's IPs are dynamic, so it is <code>0.0.0.0/0</code> plus a strong password. Say that you know this is a trade-off.</td></tr>
+      <tr><td><strong>Redis</strong></td><td>Upstash free tier</td><td>TLS is required — the URL is <code>rediss://</code> with two s's. Also a per-day command quota, so your view-counter interval matters.</td></tr>
+      <tr><td><strong>Secrets</strong></td><td>Platform dashboard</td><td><code>.env</code> is gitignored; <code>.env.example</code> is committed with every key and no values.</td></tr>
+      <tr><td><strong>Indexes</strong></td><td>Explicit migration step</td><td><code>autoIndex</code> off in production; run <code>syncIndexes()</code> deliberately, once, as part of deploy.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Production hardening worth the twenty minutes it costs: <code>helmet</code>, a CORS allowlist rather than <code>*</code>, <code>trust proxy</code> set so rate limiting sees the real client IP instead of the load balancer's, compression on JSON responses, and a request body limit set below your 1 MB paste cap plus overhead.</p>
+</section>
+
+<section id="risk">
+  <div class="sec-head"><span class="sec-num">11</span><h2>Risks and the cut list</h2></div>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Risk</th><th>Early signal</th><th>What you do about it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Parser rabbit hole</strong><br><span class="dim">the likeliest way this project fails</span></td><td>It is day 12 and you are still adding regex cases</td><td>Hard-stop at two runtimes and twenty fixtures. Above ~85% pairwise accuracy, stop tuning and ship. The remaining 15% is a README paragraph, not another two days.</td></tr>
+      <tr><td><strong>Frontend polish sink</strong></td><td>You are picking colours on day 6</td><td>Five screens, one look, move on. Nobody is hiring you for the paste editor.</td></tr>
+      <tr><td><strong>Deploy surprises</strong></td><td>Day 19, first deploy, TLS errors</td><td>Prevented by the day-2 throwaway deploy. Do not skip it.</td></tr>
+      <tr><td><strong>Benchmarking on the free tier</strong></td><td>Numbers that swing 3× between runs</td><td>Benchmark locally. Say in the README that you did, and why.</td></tr>
+      <tr><td><strong>Auth scope creep</strong></td><td>Considering OAuth, email verification, password reset</td><td>No. Two days, email and password, done.</td></tr>
+      <tr><td><strong>Week 3 compressed</strong></td><td>Day 15 arrives and week 2 is not finished</td><td>Cut from the list below, in order. Never cut the benchmark — a working app with no measurement is a tutorial project.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Cut in this order, if you must</h3>
+  <ol style="font-family:var(--serif);font-size:1.0625rem;color:var(--ink-soft);line-height:1.62;max-width:68ch;padding-left:22px;margin:0;display:flex;flex-direction:column;gap:5px">
+    <li>The trending UI — keep the Redis sorted set and the endpoint, drop the screen.</li>
+    <li>Private visibility — <code>public</code> and <code>unlisted</code> only.</li>
+    <li>Syntax highlighting — plaintext renders fine, and CodeMirror still shows structure.</li>
+    <li>My-pastes pagination — cap the list at fifty and note the limitation.</li>
+    <li>The Python parser — <em>last resort only</em>. It halves the "groups across runtimes" story, which is a real cost.</li>
+  </ol>
+  <div class="note warn">
+    <span class="lbl">Never cut these three</span>
+    <p>The fingerprinting engine, the before/after benchmark, and the README. Those three <em>are</em> the project. Everything else is scaffolding around them.</p>
+  </div>
+</section>
+
+<section id="defend">
+  <div class="sec-head"><span class="sec-num">12</span><h2>Interview defense</h2></div>
+  <p>Write each of these out in your own words during phase 7, then say them aloud. The goal is not memorisation — it is having already had the thought once, so the answer arrives as recall rather than improvisation.</p>
+  <div class="qa">
+    <div class="qa-item"><q>Why is the compound index <code>{ fingerprint: 1, createdAt: -1 }</code> in that order?</q><p>Equality before sort. Mongo seeks directly to the <code>fingerprint</code> prefix, and entries inside that prefix are already stored in descending <code>createdAt</code> order, so results come back sorted out of the index with no in-memory sort stage. Reversed, the index can't seek to a fingerprint at all and the query degrades to a scan.</p></div>
+    <div class="qa-item"><q>Why partial rather than a plain index on fingerprint?</q><p>Most pastes are ordinary code with no fingerprint at all. A partial index only stores documents matching a filter, so the index is smaller and more of it stays resident in memory. Sparse is the older special case of the same idea.</p></div>
+    <div class="qa-item"><q>Why not just hash the whole stack trace?</q><p>The grouping rate would be approximately zero. Paths, line numbers, timestamps and object ids all differ between two occurrences of the same bug, so every trace hashes uniquely and the feature does nothing.</p></div>
+    <div class="qa-item"><q>Why exclude line numbers from the hash?</q><p>So the same bug still groups after an unrelated edit shifts the file. The cost is that two different errors in the same function with the same message shape collide — a deliberate trade, and the one I would revisit first if false positives showed up in real data.</p></div>
+    <div class="qa-item"><q>What's your collision probability?</q><p>Sixteen hex characters is 64 bits, so by the birthday bound the first expected collision is around four billion distinct signatures. That's several orders of magnitude beyond anything this system will hold.</p></div>
+    <div class="qa-item"><q>Why Redis instead of another Mongo index?</q><p>Three different reasons, each with a number. Reads: the cache took p99 from <em>X</em> to <em>Y</em> at a <em>Z</em>% hit rate. Views: a Mongo write per page view doesn't scale, and buffering cut write ops/sec by <em>N</em>%. Trending: an aggregation with a sort over a growing collection versus O(log N) on a sorted set.</p></div>
+    <div class="qa-item"><q>What happens when Redis goes down?</q><p>Reads fall through to Mongo — every cache call is wrapped so a Redis error logs and continues. Buffered view counts in flight are lost, which is acceptable for a view counter and stated as such. The rate limiter fails open on reads and closed on anonymous creates, because that endpoint is the actual abuse target. I tested this by killing the container mid-load-test.</p></div>
+    <div class="qa-item"><q>How do you invalidate the cache?</q><p>Delete on write, with a one-hour TTL as a backstop. TTLs carry jitter so a batch of keys created together doesn't expire together and stampede Mongo. 404s are negatively cached for sixty seconds so slug scanning can't hammer the database.</p></div>
+    <div class="qa-item"><q>Why is <code>KEYS</code> never in this codebase?</q><p>It's O(N) over the entire keyspace and blocks Redis's single thread while it runs. The dirty-set pattern makes the flush proportional to what actually changed instead.</p></div>
+    <div class="qa-item"><q>Why bcrypt cost 12, and what does it cost you?</q><p>About 250 ms of deliberate CPU per hash. I use the async API, which runs on libuv's threadpool — four threads by default — so simultaneous logins queue and a burst stalls unrelated requests. I measured it; the number is in the README.</p></div>
+    <div class="qa-item"><q>Where does this system actually break?</q><p>Under a ramp past 200 virtual users, <em>[the component you found]</em> saturates first. The single Node process is also one core, and the view flusher is a singleton — run two instances and both flush the same dirty set, so horizontal scaling needs either a leader election or moving the flush out to its own worker. That's the first thing I'd fix.</p></div>
+    <div class="qa-item"><q>How would you take this to ten times the traffic?</q><p>Horizontal Node behind a load balancer first, since the API is stateless — with the flusher extracted to a single worker. Then a CDN in front of <code>/raw</code>, which is immutable content and trivially cacheable at the edge. Then Mongo secondary reads for the occurrence lists, which tolerate staleness. Fingerprinting moves to a queue so the create path returns before parsing finishes. I'd do them in that order because that's the order the measurements point at.</p></div>
+  </div>
+</section>
+
+<section id="done">
+  <div class="sec-head"><span class="sec-num">13</span><h2>Definition of done</h2></div>
+  <p>Three things must be true on day 21. Everything in this plan exists to make them true.</p>
+  <div class="cols2">
+    <div class="panel"><h4>1 · A measured before and after</h4><p style="font-size:.95rem">The table in section 09, filled in, with the test configuration printed next to it and both raw k6 outputs committed.</p></div>
+    <div class="panel"><h4>2 · A reason for every dependency</h4><p style="font-size:.95rem">One sentence each, containing a number you measured yourself. Four of them are drafted at the end of section 07.</p></div>
+    <div class="panel"><h4>3 · A known failure mode</h4><p style="font-size:.95rem">"It falls over around 2k concurrent because the Mongo connection pool saturates, and I'd fix it with X" beats "it handles everything fine" by a mile. Engineers know their system's limits; students claim there are none.</p></div>
+  </div>
+  <h3>Final checklist</h3>
+  <ul class="chk">
+    <li><input type="checkbox" data-task id="d-1"><label for="d-1">A stranger can open the live URL and create a paste</label></li>
+    <li><input type="checkbox" data-task id="d-2"><label for="d-2">Two different traces of the same bug visibly group</label></li>
+    <li><input type="checkbox" data-task id="d-3"><label for="d-3">The 190-pair test suite passes and its score is published</label></li>
+    <li><input type="checkbox" data-task id="d-4"><label for="d-4">Both k6 result files are committed</label></li>
+    <li><input type="checkbox" data-task id="d-5"><label for="d-5">The benchmark table has real numbers in it</label></li>
+    <li><input type="checkbox" data-task id="d-6"><label for="d-6">Killing Redis does not take the site down</label></li>
+    <li><input type="checkbox" data-task id="d-7"><label for="d-7">Every query is confirmed IXSCAN by explain</label></li>
+    <li><input type="checkbox" data-task id="d-8"><label for="d-8">CI is green on main</label></li>
+    <li><input type="checkbox" data-task id="d-9"><label for="d-9"><code>docker compose up</code> works from a clean clone</label></li>
+    <li><input type="checkbox" data-task id="d-10"><label for="d-10">The README has the diagram, the numbers and the failure mode</label></li>
+    <li><input type="checkbox" data-task id="d-11"><label for="d-11">You've said all twelve answers out loud once</label></li>
+    <li><input type="checkbox" data-task id="d-12"><label for="d-12">Resume bullets written with your own measured numbers</label></li>
+  </ul>
+  <div class="note">
+    <span class="lbl">Resume bullets — fill in what you measured</span>
+    <p>Built a code and error-log sharing service with automatic stack-trace fingerprinting that groups duplicate errors across users, at __% precision and __% recall over a 190-pair labelled test suite.</p>
+    <p style="margin-top:9px">Cut p99 read latency from __ms to __ms under 200 concurrent users with a Redis read-through cache and buffered view counters, reducing MongoDB write load by __%.</p>
+    <p style="margin-top:9px">Designed compound, partial and TTL indexes for occurrence lookup and automatic expiry; load-tested with k6 at __ req/s sustained against a 10k-document dataset.</p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var KEY = 'fpbp.v1', state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function updatePhase(phase) {
+    if (!phase) return;
+    var out = phase.querySelector('[data-prog]');
+    if (!out) return;
+    var boxes = phase.querySelectorAll('input[type=checkbox]');
+    var done = 0;
+    for (var i = 0; i < boxes.length; i++) { if (boxes[i].checked) done++; }
+    out.textContent = done + ' / ' + boxes.length;
+    out.style.color = (done === boxes.length && boxes.length) ? 'var(--ok)' : 'var(--ink-mute)';
+  }
+
+  var boxes = document.querySelectorAll('input[type=checkbox][data-task]');
+  for (var i = 0; i < boxes.length; i++) {
+    (function (b) {
+      if (state[b.id]) b.checked = true;
+      b.addEventListener('change', function () {
+        state[b.id] = b.checked; save(); updatePhase(b.closest('.phase'));
+      });
+    })(boxes[i]);
+  }
+  var phases = document.querySelectorAll('.phase');
+  for (var p = 0; p < phases.length; p++) updatePhase(phases[p]);
+
+  var fields = document.querySelectorAll('input[data-bench]');
+  for (var f = 0; f < fields.length; f++) {
+    (function (el) {
+      if (state[el.id]) el.value = state[el.id];
+      el.addEventListener('input', function () { state[el.id] = el.value; save(); });
+    })(fields[f]);
+  }
+
+  var links = {}, rail = document.querySelectorAll('.rail a');
+  for (var l = 0; l < rail.length; l++) links[rail[l].getAttribute('href').slice(1)] = rail[l];
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var a = links[en.target.id];
+        if (!a) return;
+        if (en.isIntersecting) {
+          for (var k in links) links[k].classList.remove('is-current');
+          a.classList.add('is-current');
+        }
+      });
+    }, { rootMargin: '-10% 0px -75% 0px' });
+    var secs = document.querySelectorAll('section[id]');
+    for (var s = 0; s < secs.length; s++) io.observe(secs[s]);
+  }
+})();
+</script>
