@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+dist/
+coverage/
+*.log
+.DS_Store
+.vite/
+bench/slugs.json

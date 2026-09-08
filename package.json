@@ -1,0 +1,32 @@
+{
+  "name": "samebug",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Paste an error, find out how many other people hit the same bug.",
+  "workspaces": [
+    "apps/api"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace apps/api",
+    "test": "npm run test --workspace apps/api",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "infra:up": "docker compose up -d mongo redis",
+    "infra:down": "docker compose down"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "prettier": "^3.3.3"
+  },
+  "allowScripts": {
+    "bcrypt@5.1.1": true,
+    "mongodb-memory-server@10.4.3": true,
+    "esbuild@0.21.5": true,
+    "fsevents@2.3.3": true
+  }
+}
