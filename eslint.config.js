@@ -18,4 +18,9 @@ export default [
       'prefer-const': 'error',
     },
   },
+  {
+    // CLI scripts and bench harnesses talk to a human on stdout. That is their job.
+    files: ['**/scripts/**/*.js', 'bench/**/*.js'],
+    rules: { 'no-console': 'off' },
+  },
 ];
