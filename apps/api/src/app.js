@@ -2,12 +2,14 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import pinoHttp from 'pino-http';
+import cookieParser from 'cookie-parser';
 
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import metaRoutes from './routes/meta.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 /**
  * Builds a fully configured Express app and never calls listen(). That split is
@@ -43,8 +45,10 @@ export function buildApp() {
   // check with a useful message, rather than by the body parser.
   app.use(express.json({ limit: Math.ceil(env.MAX_PASTE_BYTES * 1.1) }));
   app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
 
   app.use('/', metaRoutes);
+  app.use('/api/auth', authRoutes);
 
   app.use(notFound);
   app.use(errorHandler);
