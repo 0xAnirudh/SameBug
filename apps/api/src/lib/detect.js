@@ -1,12 +1,10 @@
-import { LANGUAGES } from '../models/Paste.js';
-
 /**
  * Deliberately crude. Five languages, a handful of signals, and plaintext when
  * nothing is obvious. Guessing wrong costs a user one dropdown change; getting
  * clever here costs days that belong to the fingerprint engine.
  *
  * @param {string} content
- * @returns {typeof LANGUAGES[number]}
+ * @returns {import('../models/Paste.js').LANGUAGES[number]}
  */
 export function detectLanguage(content) {
   const head = content.slice(0, 4000);
