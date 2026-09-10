@@ -10,6 +10,8 @@ import { requestId } from './middleware/requestId.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import metaRoutes from './routes/meta.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import pasteRoutes from './routes/paste.routes.js';
+import meRoutes from './routes/me.routes.js';
 
 /**
  * Builds a fully configured Express app and never calls listen(). That split is
@@ -49,6 +51,8 @@ export function buildApp() {
 
   app.use('/', metaRoutes);
   app.use('/api/auth', authRoutes);
+  app.use('/api/pastes', pasteRoutes);
+  app.use('/api/me', meRoutes);
 
   app.use(notFound);
   app.use(errorHandler);
