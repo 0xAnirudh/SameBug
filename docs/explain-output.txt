@@ -1,0 +1,45 @@
+seeding 500 throwaway pastes...
+
+read a paste by slug
+  stages        EXPRESS_IXSCAN
+  index         true
+  nReturned     1
+  keysExamined  1
+  docsExamined  1
+  in-memory sort no
+  millis        0
+  => PASS (expected slug_1)
+
+occurrences of one error, newest first
+  stages        LIMIT <- FETCH <- IXSCAN
+  index         true
+  nReturned     20
+  keysExamined  20
+  docsExamined  20
+  in-memory sort no
+  millis        0
+  => PASS (expected fingerprint_1_createdAt_-1)
+
+my pastes, newest first
+  stages        LIMIT <- FETCH <- IXSCAN
+  index         true
+  nReturned     20
+  keysExamined  20
+  docsExamined  20
+  in-memory sort no
+  millis        0
+  => PASS (expected authorId_1_createdAt_-1)
+
+recent public pastes
+  stages        LIMIT <- FETCH <- IXSCAN
+  index         true
+  nReturned     20
+  keysExamined  20
+  docsExamined  20
+  in-memory sort no
+  millis        0
+  => PASS (expected createdAt_-1)
+
+cleaning up...
+
+all queries index-only
