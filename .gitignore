@@ -7,3 +7,5 @@ coverage/
 .DS_Store
 .vite/
 bench/slugs.json
+
+apps/web/dist/

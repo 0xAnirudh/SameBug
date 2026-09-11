@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Paste an error, find out how many other people hit the same bug.",
   "workspaces": [
-    "apps/api"
+    "apps/api",
+    "apps/web"
   ],
   "engines": {
     "node": ">=22"
@@ -16,10 +17,13 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
     "infra:up": "docker compose up -d mongo redis",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "dev:web": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web"
   },
   "devDependencies": {
     "eslint": "^9.13.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^15.11.0",
     "prettier": "^3.3.3"
   },
@@ -27,6 +31,7 @@
     "bcrypt@5.1.1": true,
     "mongodb-memory-server@10.4.3": true,
     "esbuild@0.21.5": true,
-    "fsevents@2.3.3": true
+    "fsevents@2.3.3": true,
+    "esbuild@0.25.12": true
   }
 }
