@@ -31,11 +31,21 @@ describe('GET /health', () => {
     expect(res.headers['x-request-id']).toBe('abc-123');
   });
 
-  it('shapes unknown routes through the error handler', async () => {
-    const res = await request(app).get('/nope');
+  // Asserted on /api specifically: a non-API path is the SPA's to handle, and
+  // whether a client build exists must not change the API's contract.
+  it('shapes unknown API routes as JSON through the error handler', async () => {
+    const res = await request(app).get('/api/nope');
 
     expect(res.status).toBe(404);
+    expect(res.headers['content-type']).toMatch(/application\/json/);
     expect(res.body.error.code).toBe('NOT_FOUND');
     expect(res.body.error.requestId).toBeTruthy();
+  });
+
+  it('keeps deep unmatched API paths on the JSON contract', async () => {
+    const res = await request(app).get('/api/pastes/nope/deeper/still');
+
+    expect(res.status).toBe(404);
+    expect(res.headers['content-type']).toMatch(/application\/json/);
   });
 });

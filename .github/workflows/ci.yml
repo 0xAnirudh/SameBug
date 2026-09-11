@@ -31,6 +31,8 @@ jobs:
 
       - run: npm run lint
 
+      - run: npm run build
+
       # Integration tests start their own in-process MongoDB, so no mongo
       # service container is needed here.
       - run: npm test
