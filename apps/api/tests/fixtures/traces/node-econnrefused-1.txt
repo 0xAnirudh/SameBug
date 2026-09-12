@@ -1,0 +1,4 @@
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+    at Pool.connect (/srv/app/node_modules/pg/lib/pool.js:45:11)
+    at queryUsers (/srv/app/db/users.js:18:20)

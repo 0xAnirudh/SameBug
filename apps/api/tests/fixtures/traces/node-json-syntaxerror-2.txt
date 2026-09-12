@@ -1,0 +1,4 @@
+SyntaxError: Unexpected token } in JSON at position 1902
+    at JSON.parse (<anonymous>)
+    at parseConfig (file:///home/ani/app/config/load.js:31:19)
+    at bootstrap (file:///home/ani/app/boot.js:9:3)

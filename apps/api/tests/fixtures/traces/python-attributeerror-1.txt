@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/srv/app/mailer.py", line 55, in send
+    conn.deliver(message)
+AttributeError: 'NoneType' object has no attribute 'deliver'

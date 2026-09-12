@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/var/www/analytics/report.py", line 145, in average
+    return total / count
+ZeroDivisionError: division by zero

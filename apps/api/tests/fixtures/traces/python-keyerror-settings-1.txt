@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/srv/app/handlers/user.py", line 210, in load_settings
+    return defaults[name]
+KeyError: 'theme'

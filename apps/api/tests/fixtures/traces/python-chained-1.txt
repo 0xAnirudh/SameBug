@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/srv/app/store.py", line 15, in fetch
+    return self.cache[key]
+KeyError: 'session:abc123'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/srv/app/api.py", line 60, in load_session
+    raise SessionMissing(key) from exc
+SessionMissing: no session for 'abc123'

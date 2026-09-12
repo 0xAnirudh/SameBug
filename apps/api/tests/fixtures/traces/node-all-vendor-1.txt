@@ -1,0 +1,4 @@
+TypeError: Cannot read properties of null (reading 'pipe')
+    at Readable.pipe (node:internal/streams/readable:1000:10)
+    at SendStream.pipe (/srv/app/node_modules/send/index.js:597:23)
+    at Layer.handle [as handle_request] (/srv/app/node_modules/express/lib/router/layer.js:95:5)

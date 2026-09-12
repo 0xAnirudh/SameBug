@@ -1,0 +1,4 @@
+SyntaxError: Unexpected token } in JSON at position 417
+    at JSON.parse (<anonymous>)
+    at parseConfig (/srv/app/config/load.js:22:19)
+    at bootstrap (/srv/app/boot.js:7:3)

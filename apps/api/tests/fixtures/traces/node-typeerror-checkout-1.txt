@@ -1,0 +1,3 @@
+TypeError: Cannot read properties of undefined (reading 'userId')
+    at processPayment (/srv/app/handlers/checkout.js:12:7)
+    at async handleRequest (/srv/app/server.js:88:5)

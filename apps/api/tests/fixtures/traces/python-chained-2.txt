@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/opt/svc/store.py", line 22, in fetch
+    return self.cache[key]
+KeyError: 'session:zz9911'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/svc/api.py", line 71, in load_session
+    raise SessionMissing(key) from exc
+SessionMissing: no session for 'zz9911'

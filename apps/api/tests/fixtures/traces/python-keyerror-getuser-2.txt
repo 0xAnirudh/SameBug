@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/ani/svc/handlers/user.py", line 77, in get_user
+    return cache[user_id]
+KeyError: 'user_41'

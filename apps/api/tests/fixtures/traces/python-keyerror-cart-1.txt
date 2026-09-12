@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/srv/app/cart.py", line 30, in add_item
+    return basket[sku]
+KeyError: 'SKU-4471'

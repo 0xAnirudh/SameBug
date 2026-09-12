@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/opt/app/handlers/user.py", line 12, in get_user
+    return cache[user_id]
+KeyError: 'user_990013'

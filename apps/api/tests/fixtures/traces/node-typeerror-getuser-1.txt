@@ -1,0 +1,5 @@
+TypeError: Cannot read properties of undefined (reading 'userId')
+    at getUser (/srv/app/handlers/user.js:42:15)
+    at async handleRequest (/srv/app/server.js:88:5)
+    at Layer.handle [as handle_request] (/srv/app/node_modules/express/lib/router/layer.js:95:5)
+    at next (/srv/app/node_modules/express/lib/router/route.js:144:13)

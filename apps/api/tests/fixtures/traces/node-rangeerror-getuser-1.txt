@@ -1,0 +1,3 @@
+RangeError: Invalid array length
+    at getUser (/srv/app/handlers/user.js:42:15)
+    at async handleRequest (/srv/app/server.js:88:5)

@@ -1,0 +1,4 @@
+TypeError: Cannot read properties of undefined (reading 'userId')
+    at getUser (/home/ani/project/handlers/user.js:58:22)
+    at async handleRequest (/home/ani/project/server.js:103:9)
+    at Layer.handle [as handle_request] (/home/ani/project/node_modules/express/lib/router/layer.js:95:5)
