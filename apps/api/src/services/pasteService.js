@@ -3,6 +3,9 @@ import { Paste } from '../models/Paste.js';
 import { AppError } from '../lib/AppError.js';
 import { env } from '../config/env.js';
 import { detectLanguage, detectKind } from '../lib/detect.js';
+import { fingerprint as fingerprintTrace } from '../fingerprint/index.js';
+import { recordOccurrence } from './fingerprintService.js';
+import { logger } from '../lib/logger.js';
 import * as cache from './cacheService.js';
 
 /**
@@ -33,26 +36,62 @@ export async function createPaste({ content, title, language, visibility, expiry
     );
   }
 
+  // Returns null for anything that is not a recognisable trace, which is the
+  // common case and not an error.
+  const parsed = fingerprintTrace(content);
+
   const doc = {
     title,
     content,
     language: language ?? detectLanguage(content),
-    kind: detectKind(content), // phase 5 upgrades this to 'stacktrace' when it parses
+    kind: parsed ? 'stacktrace' : detectKind(content),
     visibility: visibility ?? 'public',
     authorId: authorId ?? null,
     expiresAt: expiryToDate(expiry),
+    ...(parsed
+      ? {
+          fingerprint: parsed.fingerprint,
+          parsed: {
+            runtime: parsed.runtime,
+            errorType: parsed.errorType,
+            message: parsed.message,
+            normalizedMessage: parsed.normalizedMessage,
+            frames: parsed.frames,
+            allFramesAreVendor: parsed.allFramesAreVendor,
+          },
+        }
+      : {}),
   };
 
   // One retry is enough: a second collision on 60 bits of entropy is not a
   // thing that happens, and an unbounded retry loop hides a real problem.
+  let created;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      return await Paste.create({ ...doc, slug: nanoid() });
+      created = await Paste.create({ ...doc, slug: nanoid() });
+      break;
     } catch (err) {
       if (err.code === 11000 && attempt === 0) continue;
       throw err;
     }
   }
+
+  /**
+   * The paste is written first because it is the source of truth; the counter
+   * on the fingerprint document is a denormalised cache of it. If this upsert
+   * fails the count drifts low, which is a cosmetic badge being wrong — not a
+   * reason to fail a paste the user has already written.
+   * scripts/recountFingerprints.js rebuilds counts from the pastes collection.
+   */
+  if (parsed) {
+    try {
+      await recordOccurrence(parsed, created.createdAt);
+    } catch (err) {
+      logger.error({ err, fingerprint: parsed.fingerprint }, 'failed to record occurrence');
+    }
+  }
+
+  return created;
 }
 
 /**

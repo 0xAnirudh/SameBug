@@ -8,8 +8,9 @@ import mongoose from 'mongoose';
 import { connectMongo, disconnectMongo } from '../src/config/mongo.js';
 import { User } from '../src/models/User.js';
 import { Paste } from '../src/models/Paste.js';
+import { Fingerprint } from '../src/models/Fingerprint.js';
 
-const models = [User, Paste];
+const models = [User, Paste, Fingerprint];
 
 await connectMongo();
 

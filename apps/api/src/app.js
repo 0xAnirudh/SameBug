@@ -15,6 +15,7 @@ import metaRoutes from './routes/meta.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import pasteRoutes from './routes/paste.routes.js';
 import meRoutes from './routes/me.routes.js';
+import errorRoutes from './routes/error.routes.js';
 
 /**
  * Builds a fully configured Express app and never calls listen(). That split is
@@ -56,6 +57,7 @@ export function buildApp() {
   app.use('/api/auth', authRoutes);
   app.use('/api/pastes', pasteRoutes);
   app.use('/api/me', meRoutes);
+  app.use('/api/errors', errorRoutes);
 
   // An unmatched /api route is always a JSON 404, whether or not a client
   // build exists. Without this the SPA fallback below would swallow API typos
