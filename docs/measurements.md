@@ -75,6 +75,28 @@ single-document fast path rather than `IXSCAN`.
 
 ---
 
+## Grouping accuracy
+
+`npm test -- grouping` evaluates all C(22,2) = 231 pairs from the labelled
+fixture corpus.
+
+```
+pairs 231  TP 11  FP 0  FN 0  TN 220
+precision 100.0%  recall 100.0%
+```
+
+Verified end to end through the running API as well: posting all 22 fixtures
+produced exactly 13 distinct fingerprints for 13 labelled groups, with no group
+split across two fingerprints and no two groups merged.
+
+Caveat worth stating out loud: the corpus is synthetic-but-realistic, not
+harvested from production traffic. It covers the shapes that break naive
+parsers — chained Python tracebacks, ESM `file://` frames, Windows drive
+letters, `at async` / `at new X` call sites, crashes with no application frame
+at all — but 100% here means "no known failure in this corpus".
+
+---
+
 ## Read path
 
 _Phase 6. Table lives in the README._

@@ -29,6 +29,64 @@ spins up a real MongoDB in-process:
 npm test
 ```
 
+## How grouping works
+
+Two people hit the same bug. Their traces differ in line numbers, absolute
+paths, timestamps and object ids, so a naive hash groups nothing at all.
+
+1. **Detect the runtime** — Node and Python are scored against each other; a tie
+   or no evidence returns null and the paste is stored as a plain log.
+2. **Parse into frames** — `{ file, line, col, function }`.
+3. **Normalize the message** — eleven ordered substitutions strip timestamps,
+   UUIDs, object ids, addresses, URLs, IPs, emails, paths, quoted literals,
+   long digests and finally bare numbers. Order is the design: if the number
+   rule ran first it would shred UUIDs before anything could recognise them.
+4. **Keep only application frames** — library frames differ between users;
+   application frames identify the bug. A `TypeError` thrown inside Express
+   tells you nothing.
+5. **Hash** `errorType | normalizedMessage | top 3 app frames as basename:function`,
+   sha1, first 16 hex characters.
+
+Deliberately **not** in the hash: line numbers (an unrelated edit shifts them),
+absolute paths (they differ per machine), columns, timestamps.
+
+```
+Cannot read property 'userId' of undefined at index 42
+  -> cannot read property <str> of undefined at index <num>
+```
+
+### Measured
+
+| | |
+| --- | --- |
+| Corpus | 22 labelled traces, 13 groups |
+| Pairs evaluated | 231 |
+| Precision | 100% |
+| Recall | 100% |
+
+Every pair is one prediction — do these two group or not — rather than scoring
+each trace on its own. Precision and recall are reported separately because the
+errors are not equally bad: **a false positive merges two genuinely different
+bugs and hides one of them**, while a false negative only shows a duplicate.
+
+> The corpus is hand-written to reproduce shapes seen in the wild (chained
+> Python exceptions, ESM `file://` frames, Windows paths, all-vendor crashes),
+> not harvested from production. Treat 100% as "no known failure in this
+> corpus", not as a general accuracy claim.
+
+### Known limitations
+
+Both are asserted in [`tests/unit/limitations.test.js`](apps/api/tests/unit/limitations.test.js)
+so they stay true statements rather than remembered ones.
+
+- **Over-merging.** Two different bugs in the same function whose messages
+  differ only inside a quoted literal collide. This is the price of stripping
+  literals — without it, every distinct user id would form its own group.
+- **Over-splitting.** The hash covers the top three application frames, so the
+  same failing line reached from a different caller forms a second group. That
+  separates "fails during checkout" from "fails during the nightly import", at
+  the cost of splitting one root cause.
+
 ## Architecture
 
 ```
