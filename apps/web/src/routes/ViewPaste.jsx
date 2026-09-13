@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CodeMirror } from '../components/CodeMirror.jsx';
 import { CopyLink } from '../components/CopyLink.jsx';
+import { FrameList } from '../components/FrameList.jsx';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { api } from '../api/client.js';
 
@@ -23,6 +24,7 @@ export function ViewPaste() {
   const navigate = useNavigate();
 
   const [paste, setPaste] = useState(null);
+  const [group, setGroup] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -30,9 +32,21 @@ export function ViewPaste() {
     setPaste(null);
     setError(null);
 
+    setGroup(null);
+
     api
       .getPaste(slug, controller.signal)
-      .then((res) => setPaste(res.paste))
+      .then((res) => {
+        setPaste(res.paste);
+        // The badge is a second request on purpose: the paste read is the hot
+        // path and must not pay for a join it usually does not need.
+        if (res.paste.fingerprint) {
+          return api
+            .errorGroup(res.paste.fingerprint, controller.signal)
+            .then((g) => setGroup(g.group))
+            .catch(() => {});
+        }
+      })
       .catch((err) => {
         if (err.name !== 'AbortError') setError(err.message);
       });
@@ -74,9 +88,10 @@ export function ViewPaste() {
         <span className="chip">{paste.kind}</span>
         {paste.fingerprint && (
           <Link className="chip accent" to={`/e/${paste.fingerprint}`}>
-            grouped error
+            {group ? `seen ${group.count} ${group.count === 1 ? 'time' : 'times'}` : 'grouped error'}
           </Link>
         )}
+        {paste.parsed?.errorType && <span className="chip">{paste.parsed.errorType}</span>}
         <span>{paste.views} views</span>
         <span>{expiryLabel(paste.expiresAt)}</span>
         <a href={`/api/pastes/${slug}/raw`} target="_blank" rel="noreferrer">
@@ -88,6 +103,13 @@ export function ViewPaste() {
           </button>
         )}
       </div>
+
+      {paste.parsed?.frames?.length > 0 && (
+        <FrameList
+          frames={paste.parsed.frames}
+          allFramesAreVendor={paste.parsed.allFramesAreVendor}
+        />
+      )}
 
       <CodeMirror value={paste.content} language={paste.language} readOnly minHeight={260} />
 

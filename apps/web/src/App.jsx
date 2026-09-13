@@ -5,6 +5,7 @@ import { NewPaste } from './routes/NewPaste.jsx';
 import { ViewPaste } from './routes/ViewPaste.jsx';
 import { SignIn } from './routes/SignIn.jsx';
 import { MyPastes } from './routes/MyPastes.jsx';
+import { ErrorGroup } from './routes/ErrorGroup.jsx';
 import { NotFound } from './routes/NotFound.jsx';
 
 export function App() {
@@ -17,6 +18,7 @@ export function App() {
             <Route path="p/:slug" element={<ViewPaste />} />
             <Route path="signin" element={<SignIn />} />
             <Route path="mine" element={<MyPastes />} />
+            <Route path="e/:fp" element={<ErrorGroup />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

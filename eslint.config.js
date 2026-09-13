@@ -20,8 +20,9 @@ export default [
     },
   },
   {
-    // CLI scripts and bench harnesses talk to a human on stdout. That is their job.
-    files: ['**/scripts/**/*.js', 'bench/**/*.js'],
+    // CLI scripts, bench harnesses and tests talk to a human on stdout.
+    // The grouping test prints its precision and recall, which is the point of it.
+    files: ['**/scripts/**/*.js', 'bench/**/*.js', '**/tests/**/*.js'],
     rules: { 'no-console': 'off' },
   },
   {
