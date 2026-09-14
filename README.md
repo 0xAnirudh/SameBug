@@ -105,22 +105,65 @@ read path falls through to Mongo when it is unavailable, and `/health` reports
 
 ## Benchmark
 
-Measured on the read path under a skewed (80/20) access distribution against a
-seeded dataset. Both runs use the same binary on the same machine against the
-same data; the only variable is `CACHE_ENABLED`.
+Read path under a skewed (80/20) access distribution against 8,000 seeded
+pastes (39 MB, avg 5 KB/doc). Two runs of the **same script on the same
+machine against the same data**; the only variable is `CACHE_ENABLED`.
+Warm-up is excluded from the reported metrics by the script itself.
 
-| Metric         | No cache | With Redis |
-| -------------- | -------- | ---------- |
-| p50            |          |            |
-| p95            |          |            |
-| p99            |          |            |
-| req/sec        |          |            |
-| error rate     |          |            |
-| cache hit rate | n/a      |            |
-| Mongo ops/sec  |          |            |
+| Metric | No cache | With Redis | Change |
+| --- | --- | --- | --- |
+| p50 | 33.4 ms | 16.3 ms | **−51%** |
+| p95 | 93.1 ms | 39.7 ms | **−57%** |
+| p99 | 220.5 ms | 62.8 ms | **−72%** |
+| req/sec | 2,438 | 5,214 | **+114%** |
+| error rate | 0.00% | 0.00% | — |
+| cache hit rate | n/a | 99.96% | — |
+| Mongo queries/sec | 2,869 | 43.8 | **−98.5%** |
+| Mongo queries total | 519,922 | 8,006 | — |
 
-_Test config: TBD — machine, dataset size, VUs, duration._
-Raw k6 output: [`bench/results/`](bench/results/).
+8,006 queries is one per distinct slug — every paste was read from Mongo
+exactly once and served from Redis after that.
+
+### Buffered view counters, measured separately
+
+A Mongo write on every page view puts the write path on the hot read path.
+This is its own experiment: cache on in both runs, only `VIEW_BUFFER_ENABLED`
+changes.
+
+| Metric | Write per view | Buffered in Redis | Change |
+| --- | --- | --- | --- |
+| p50 | 21.9 ms | 18.8 ms | −14% |
+| p95 | 52.5 ms | 38.8 ms | −26% |
+| p99 | 98.0 ms | 57.4 ms | **−41%** |
+| req/sec | 3,584 | 4,873 | **+36%** |
+| Mongo writes/sec | 3,712 | 16.5 | **−99.6%** |
+| Mongo writes total | 674,560 | 3,000 | — |
+
+Two experiments rather than one, because "we added Redis and it got faster"
+does not say which part did the work.
+
+### Why every dependency is here
+
+- **Read cache** — paste reads were 220 ms at p99 against Mongo; 63 ms cached,
+  at a 99.96% hit rate on this dataset.
+- **Buffered counters** — a write per view is 3,712 Mongo writes/sec at 3,600
+  req/s; buffering makes it 16.5.
+- **Trending sorted set** — `ZINCRBY`/`ZREVRANGE` is O(log N) write and
+  O(log N + M) read; from Mongo it is an aggregation with a sort over a
+  collection that only grows.
+- **Rate limiter** — anonymous creation is an open write endpoint, and the
+  check-and-increment has to be atomic, which is why it is a Lua script.
+
+Raw k6 output for every run: [`bench/results/`](bench/results/).
+
+### Where it breaks
+
+Clean through 500 concurrent users at 0% errors; it starts shedding requests
+between 500 and 1000. The API logs **zero** application errors throughout, so
+the failures are at the connection layer — most likely the OS accept queue,
+which is 128 on this machine. Full analysis, including the caveat that the load
+generator shared the laptop with everything it was measuring, is in
+[docs/failure-modes.md](docs/failure-modes.md).
 
 ## Layout
 

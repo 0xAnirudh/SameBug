@@ -99,4 +99,56 @@ at all — but 100% here means "no known failure in this corpus".
 
 ## Read path
 
-_Phase 6. Table lives in the README._
+### Run configuration
+
+Identical for every run below; only the named flag changes.
+
+| | |
+| --- | --- |
+| Machine | Apple M1 MacBook Air, 8 cores, 16 GB |
+| Node | 24.19.0 |
+| MongoDB | 7.0.24, local, WiredTiger cache 1 GB |
+| Redis | 8.10.1, local |
+| Dataset | 8,000 pastes, 39.1 MB, avg 5.0 KB/doc, spread over 90 days |
+| Mix | 60% code, 25% stack traces, 15% logs |
+| Access pattern | 80% of requests to 20% of slugs |
+| Profile | 30s ramp to 50 VU, 2m at 200 VU, 30s down |
+| Warm-up | first 30s excluded by the script, not by hand |
+| Rate limiting | disabled — a limiter would throttle the test and measure itself |
+
+Deliberately **not** run against Atlas: the free tier is shared and CPU
+throttled, so benchmarking it measures someone else's noise. Local mongod comes
+from the binary `mongodb-memory-server` already caches, which also means the
+benchmark needs no Docker.
+
+### Experiment 1 — read cache
+
+| Metric | `CACHE_ENABLED=false` | `CACHE_ENABLED=true` |
+| --- | --- | --- |
+| p50 | 33.36 ms | 16.27 ms |
+| p95 | 93.13 ms | 39.71 ms |
+| p99 | 220.52 ms | 62.82 ms |
+| max | 1.01 s | 601.91 ms |
+| req/sec measured | 2,438 | 5,214 |
+| error rate | 0.00% | 0.00% |
+| cache hit rate | n/a | 99.96% |
+| Mongo queries/sec | 2,869.1 | 43.8 |
+| Mongo queries total | 519,922 | 8,006 |
+
+### Experiment 2 — buffered view counters
+
+Cache on in both. Only `VIEW_BUFFER_ENABLED` changes.
+
+| Metric | `false` (write per view) | `true` (buffered) |
+| --- | --- | --- |
+| p50 | 21.90 ms | 18.83 ms |
+| p95 | 52.47 ms | 38.82 ms |
+| p99 | 98.04 ms | 57.39 ms |
+| req/sec measured | 3,584 | 4,873 |
+| Mongo writes/sec | 3,712.1 | 16.5 |
+| Mongo writes total | 674,560 | 3,000 |
+
+### Ramp to failure
+
+See [failure-modes.md](failure-modes.md). Clean to 500 VUs; first errors
+between 500 and 1000; zero application-level errors throughout.
