@@ -35,6 +35,13 @@ const schema = z.object({
   CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(3600),
 
   VIEW_FLUSH_INTERVAL_MS: z.coerce.number().int().positive().default(30000),
+  // Its own flag, not CACHE_ENABLED: buffering views and caching reads are two
+  // separate claims and each needs its own before/after.
+  VIEW_BUFFER_ENABLED: boolish('true'),
+  VIEW_FLUSH_BATCH: z.coerce.number().int().positive().default(500),
+  // Turned off for load tests — a limiter would throttle the test itself and
+  // measure the limiter instead of the system.
+  RATE_LIMIT_ENABLED: boolish('true'),
   MAX_PASTE_BYTES: z.coerce.number().int().positive().default(1024 * 1024),
 
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
