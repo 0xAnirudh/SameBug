@@ -100,21 +100,33 @@ export async function createPaste({ content, title, language, visibility, expiry
 export async function getPasteBySlug(slug, viewer) {
   const key = cache.pasteKey(slug);
 
-  const { value, status } = await cache.safely(() => cache.get(key), {
+  const cached = await cache.safely(() => cache.get(key), {
     value: null,
     status: cache.CACHE_MISS,
   });
 
-  let paste = value;
+  // A remembered 404. Answering it here is the whole point of caching misses.
+  if (cached.negative) throw AppError.notFound('That paste does not exist, or it expired');
+
+  let paste = cached.value;
+
   if (!paste) {
-    paste = await Paste.findOne({ slug });
-    if (paste) await cache.safely(() => cache.set(key, paste), undefined);
+    // Unchanged from the no-cache baseline on purpose: the cache is the only
+    // variable between the two benchmark runs, so this query must not move.
+    const doc = await Paste.findOne({ slug });
+
+    if (doc) {
+      paste = doc.toJSON();
+      await cache.safely(() => cache.set(key, paste), undefined);
+    } else {
+      await cache.safely(() => cache.setNegative(key), undefined);
+    }
   }
 
   if (!paste) throw AppError.notFound('That paste does not exist, or it expired');
 
   assertCanRead(paste, viewer);
-  return { paste, cacheStatus: status };
+  return { paste, cacheStatus: cached.status };
 }
 
 /**
