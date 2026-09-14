@@ -6,6 +6,7 @@ coverage/
 *.log
 .DS_Store
 .vite/
-bench/slugs.json
 
 apps/web/dist/
+bench/slugs.json
+.env.bench
