@@ -3,11 +3,14 @@ import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { connectMongo, disconnectMongo } from './config/mongo.js';
 import { connectRedis, disconnectRedis } from './config/redis.js';
+import { startViewFlusher } from './jobs/flushViews.js';
 
 async function main() {
   // Mongo is required to serve. Redis is not — connectRedis resolves either way.
   await connectMongo();
   await connectRedis();
+
+  const stopFlusher = startViewFlusher();
 
   const app = buildApp();
   const server = app.listen(env.PORT, () => {
@@ -23,6 +26,7 @@ async function main() {
     // Stop accepting connections, let in-flight requests finish, then close
     // the stores. Closing them first would fail those requests for no reason.
     server.close(async () => {
+      await Promise.allSettled([stopFlusher()]);
       await Promise.allSettled([disconnectMongo(), disconnectRedis()]);
       logger.info('shutdown complete');
       process.exit(0);
