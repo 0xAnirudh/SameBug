@@ -23,7 +23,8 @@
     "start": "node --env-file-if-exists=.env apps/api/src/index.js",
     "indexes:sync": "node --env-file-if-exists=.env apps/api/scripts/syncIndexes.js",
     "bench:seed": "node bench/seed.js",
-    "bench:explain": "node --env-file-if-exists=.env apps/api/scripts/explain.js"
+    "bench:explain": "node --env-file-if-exists=.env apps/api/scripts/explain.js",
+    "refingerprint": "node --env-file-if-exists=.env apps/api/scripts/refingerprint.js"
   },
   "devDependencies": {
     "eslint": "^9.13.0",
