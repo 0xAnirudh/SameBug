@@ -25,6 +25,31 @@ const fingerprintSchema = new mongoose.Schema(
 
     firstSeenAt: { type: Date, required: true },
     lastSeenAt: { type: Date, required: true },
+
+    /**
+     * Cached on the GROUP, not on the paste. Six occurrences of one bug cost
+     * one API call, ever. The grouping is what makes the LLM affordable —
+     * without it this would be one call per paste.
+     *
+     * `signature` records what was diagnosed, so a diagnosis can be detected as
+     * stale if the fingerprinting rules change under it.
+     */
+    diagnosis: {
+      type: new mongoose.Schema(
+        {
+          summary: String,
+          likelyCauses: [{ _id: false, cause: String, detail: String, likelihood: String }],
+          suggestedFix: String,
+          whatToCheck: [String],
+          confidence: String,
+          model: String,
+          signature: String,
+          generatedAt: Date,
+        },
+        { _id: false }
+      ),
+      default: undefined,
+    },
   },
   { versionKey: false, _id: false }
 );

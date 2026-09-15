@@ -44,6 +44,10 @@ const schema = z.object({
   RATE_LIMIT_ENABLED: boolish('true'),
   MAX_PASTE_BYTES: z.coerce.number().int().positive().default(1024 * 1024),
 
+  // Optional. Absent means the diagnosis endpoint reports itself unavailable
+  // rather than erroring — every other feature works without it.
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   LOG_LEVEL: z.enum(['silent', 'fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 });
