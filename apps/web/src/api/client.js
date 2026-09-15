@@ -131,6 +131,8 @@ export const api = {
   deletePaste: (slug) => request(`/api/pastes/${slug}`, { method: 'DELETE' }),
   errorGroup: (fp, signal) => request(`/api/errors/${fp}`, { signal }),
   variance: (fp, signal) => request(`/api/errors/${fp}/variance`, { signal }),
+  diagnosis: (fp, signal) => request(`/api/errors/${fp}/diagnosis`, { signal }),
+  diagnose: (fp) => request(`/api/errors/${fp}/diagnosis`, { method: 'POST' }),
   occurrences: (fp, { cursor, limit = 20 } = {}) => {
     const qs = new URLSearchParams({ limit: String(limit) });
     if (cursor) qs.set('cursor', cursor);

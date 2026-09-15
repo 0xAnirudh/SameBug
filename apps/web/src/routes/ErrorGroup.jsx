@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { Variance } from '../components/Variance.jsx';
+import { Diagnosis } from '../components/Diagnosis.jsx';
 
 function ago(date) {
   const seconds = Math.round((Date.now() - new Date(date)) / 1000);
@@ -17,6 +18,7 @@ export function ErrorGroup() {
   const [group, setGroup] = useState(null);
   const [items, setItems] = useState([]);
   const [variance, setVariance] = useState(null);
+  const [diagnosis, setDiagnosis] = useState(null);
   const [cursor, setCursor] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,6 +27,7 @@ export function ErrorGroup() {
     const controller = new AbortController();
     setGroup(null);
     setVariance(null);
+    setDiagnosis(null);
     setError(null);
 
     api
@@ -36,10 +39,11 @@ export function ErrorGroup() {
         setCursor(page.nextCursor);
         // Its own request: it scans the occurrences, and the page is useful
         // before it lands.
-        return api
-          .variance(fp, controller.signal)
-          .then(setVariance)
-          .catch(() => {});
+        return Promise.all([
+          api.variance(fp, controller.signal).then(setVariance).catch(() => {}),
+          // Reads a stored diagnosis only — never spends money on page load.
+          api.diagnosis(fp, controller.signal).then(setDiagnosis).catch(() => {}),
+        ]);
       })
       .catch((err) => {
         if (err.name !== 'AbortError') setError(err.message);
@@ -97,6 +101,12 @@ export function ErrorGroup() {
       </div>
 
       <Variance data={variance} />
+
+      <Diagnosis
+        fingerprint={fp}
+        initial={diagnosis?.diagnosis}
+        available={diagnosis?.available ?? false}
+      />
 
       <h2>Occurrences</h2>
       <div className="list">

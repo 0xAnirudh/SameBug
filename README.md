@@ -131,6 +131,40 @@ what every placeholder stood for. `variance.js` is pure and deliberately does
 not touch `normalize.js`: changing normalization would change every fingerprint
 and orphan every stored group.
 
+### Diagnosis
+
+A group page can ask Claude what is likely wrong and how to fix it. Optional —
+set `ANTHROPIC_API_KEY` to enable it; every other feature works without it.
+
+Two properties fall out of the fingerprinting rather than being bolted on:
+
+**Cost.** The diagnosis is keyed to a *fingerprint*, not a paste, and stored on
+the group document. Six occurrences of one bug cost one API call, ever. Grouping
+is what turns an O(occurrences) bill into an O(distinct bugs) bill.
+
+**Privacy.** What gets sent is the signature, not the paste — normalization has
+already replaced every literal. This is the entire prompt for a group whose
+pastes live under `/home/anirudh/secret-client-project`:
+
+```
+Runtime: node
+Error type: TypeError
+Normalized message: cannot read properties of undefined (reading <str>)
+Application frames, innermost first:
+  1. getUser (user.js)
+  2. handleRequest (server.js)
+Seen 6 times.
+Across those occurrences these fields differ:
+  - quoted value: 2 distinct values
+  - deployment path in user.js:getUser: 2 distinct values
+```
+
+No absolute paths, no line numbers, no source, and no literal values. The
+anonymization is a consequence of the grouping design, not a separate scrubbing
+pass — which is why
+[`tests/unit/diagnose.test.js`](apps/api/tests/unit/diagnose.test.js) asserts on
+what the prompt does *not* contain.
+
 ### Known limitations
 
 Both are asserted in [`tests/unit/limitations.test.js`](apps/api/tests/unit/limitations.test.js)
