@@ -121,6 +121,12 @@ throttled, so benchmarking it measures someone else's noise. Local mongod comes
 from the binary `mongodb-memory-server` already caches, which also means the
 benchmark needs no Docker.
 
+The benchmark also uses its own Redis database (`/1`). Sharing db 0 with
+development leaves the load test's buffered view counts behind — hundreds of
+thousands of increments against slugs that only exist in the benchmark
+dataset — and the next dev server to start spends minutes flushing them into a
+database where those slugs were never created. See `.env.bench.example`.
+
 ### Experiment 1 — read cache
 
 | Metric | `CACHE_ENABLED=false` | `CACHE_ENABLED=true` |
