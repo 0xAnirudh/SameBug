@@ -12,18 +12,51 @@ paths and shifted line numbers, groups into one.
 
 ---
 
-## Quickstart
+## Running it locally
+
+Needs Node 22+, a MongoDB and a Redis. Docker is optional — MongoDB Atlas and a
+`brew install redis` work fine, and the tests need neither.
 
 ```bash
-cp .env.example .env     # then fill in MONGO_URI, REDIS_URL and two JWT secrets
+cp .env.example .env     # fill in MONGO_URI, REDIS_URL and two JWT secrets
 npm install
-npm run infra:up         # mongo + redis via docker (skip if you use Atlas / local redis)
-npm run dev
-curl localhost:4100/health
+npm run indexes:sync     # autoIndex is off; indexes are an explicit step
 ```
 
-Tests need neither Docker nor a running database — `mongodb-memory-server`
-spins up a real MongoDB in-process:
+Generate the secrets rather than inventing them:
+
+```bash
+openssl rand -base64 48
+```
+
+Then run the two processes in separate terminals:
+
+```bash
+npm run dev
+```
+
+```bash
+npm run dev:web
+```
+
+- Client — <http://localhost:5273> (Vite proxies `/api` to the API, so the
+  browser sees one origin and the refresh cookie behaves as it will in production)
+- API — <http://localhost:4100>
+
+**In VS Code**, `.vscode/launch.json` ships a compound config: pick
+**Full stack (API + Web)** from the Run and Debug panel and both start with
+breakpoints attached.
+
+If you prefer containers for the databases:
+
+```bash
+npm run infra:up
+```
+
+### Tests
+
+No Docker and no running database — `mongodb-memory-server` starts a real
+MongoDB in-process. A local Redis is needed for the Redis suite only.
 
 ```bash
 npm test

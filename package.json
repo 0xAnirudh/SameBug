@@ -19,7 +19,11 @@
     "infra:up": "docker compose up -d mongo redis",
     "infra:down": "docker compose down",
     "dev:web": "npm run dev --workspace apps/web",
-    "build": "npm run build --workspace apps/web"
+    "build": "npm run build --workspace apps/web",
+    "start": "node --env-file-if-exists=.env apps/api/src/index.js",
+    "indexes:sync": "node --env-file-if-exists=.env apps/api/scripts/syncIndexes.js",
+    "bench:seed": "node bench/seed.js",
+    "bench:explain": "node --env-file-if-exists=.env apps/api/scripts/explain.js"
   },
   "devDependencies": {
     "eslint": "^9.13.0",

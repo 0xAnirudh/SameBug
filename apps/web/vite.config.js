@@ -9,6 +9,8 @@ export default defineConfig({
     // production and there is no CORS special case to debug later.
     proxy: {
       '/api': { target: 'http://localhost:4100', changeOrigin: true },
+      // Not under /api, and handy to hit from the dev origin.
+      '/health': { target: 'http://localhost:4100', changeOrigin: true },
     },
   },
   build: { outDir: 'dist', sourcemap: true },
