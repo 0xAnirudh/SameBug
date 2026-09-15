@@ -67,8 +67,18 @@ export const RULES = [
   },
   {
     name: 'number',
-    // Last of the substitutions, deliberately.
-    pattern: /\b\d+(?:\.\d+)?\b/g,
+    /**
+     * Last of the substitutions, deliberately.
+     *
+     * No trailing \b: a unit suffix makes one impossible, because there is no
+     * word boundary between the 0 and the m of "30000ms". With the boundary,
+     * "connect ETIMEDOUT <ip>:<num> after 30000ms" kept its duration and two
+     * occurrences of the same timeout produced different fingerprints — which
+     * is exactly the failure this whole module exists to prevent.
+     *
+     * A leading \b is still required, so "v2" and "utf8" keep their digits.
+     */
+    pattern: /\b\d+(?:\.\d+)?/g,
     replacement: '<num>',
   },
 ];

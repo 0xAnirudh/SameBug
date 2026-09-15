@@ -3,6 +3,8 @@
   "node-all-vendor-2.txt": "G",
   "node-econnrefused-1.txt": "E",
   "node-econnrefused-2.txt": "E",
+  "node-etimedout-1.txt": "N",
+  "node-etimedout-2.txt": "N",
   "node-json-syntaxerror-1.txt": "K",
   "node-json-syntaxerror-2.txt": "K",
   "node-rangeerror-getuser-1.txt": "L",
@@ -19,6 +21,8 @@
   "python-keyerror-getuser-2.txt": "C",
   "python-keyerror-getuser-3.txt": "C",
   "python-keyerror-settings-1.txt": "M",
+  "python-timeout-1.txt": "O",
+  "python-timeout-2.txt": "O",
   "python-zerodivision-1.txt": "F",
   "python-zerodivision-2.txt": "F"
 }

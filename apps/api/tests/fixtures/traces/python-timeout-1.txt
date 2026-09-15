@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/srv/app/clients/billing.py", line 64, in charge
+    return self.session.post(url, timeout=30)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.example.com', port=443): Read timed out. (read timeout=30.0s)
