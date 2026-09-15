@@ -107,6 +107,30 @@ bugs and hides one of them**, while a false negative only shows a duplicate.
 > not harvested from production. Treat 100% as "no known failure in this
 > corpus", not as a general accuracy claim.
 
+### Beyond the count
+
+A group page does not just say "seen 6 times" — it says what those occurrences
+share and exactly which parts of them differ:
+
+```
+SHARED BY ALL     getUser user.js  called from  handleRequest server.js
+
+VARIES            quoted value <str>              2 values
+                  'userId'  'orderId'
+                  deployment path in user.js      5 values
+                  /srv/app/handlers  /home/ani/project/handlers  C:\work\app\handlers ...
+                  line number in user.js          5 values
+                  42  58  61  311  903
+```
+
+Recovering those literals works without reversing normalization, which would be
+lossy and fragile. Every occurrence in a group shares one `normalizedMessage` by
+construction, so turning that string back into a regex — literals escaped,
+placeholders as capture groups — and running it over each raw message extracts
+what every placeholder stood for. `variance.js` is pure and deliberately does
+not touch `normalize.js`: changing normalization would change every fingerprint
+and orphan every stored group.
+
 ### Known limitations
 
 Both are asserted in [`tests/unit/limitations.test.js`](apps/api/tests/unit/limitations.test.js)

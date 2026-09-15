@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client.js';
+import { Variance } from '../components/Variance.jsx';
 
 function ago(date) {
   const seconds = Math.round((Date.now() - new Date(date)) / 1000);
@@ -15,6 +16,7 @@ export function ErrorGroup() {
 
   const [group, setGroup] = useState(null);
   const [items, setItems] = useState([]);
+  const [variance, setVariance] = useState(null);
   const [cursor, setCursor] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,6 +24,7 @@ export function ErrorGroup() {
   useEffect(() => {
     const controller = new AbortController();
     setGroup(null);
+    setVariance(null);
     setError(null);
 
     api
@@ -31,6 +34,12 @@ export function ErrorGroup() {
       .then((page) => {
         setItems(page.items);
         setCursor(page.nextCursor);
+        // Its own request: it scans the occurrences, and the page is useful
+        // before it lands.
+        return api
+          .variance(fp, controller.signal)
+          .then(setVariance)
+          .catch(() => {});
       })
       .catch((err) => {
         if (err.name !== 'AbortError') setError(err.message);
@@ -71,7 +80,7 @@ export function ErrorGroup() {
         <span>last seen {ago(group.lastSeenAt)}</span>
       </div>
 
-      <div className="card" style={{ marginBottom: 20 }}>
+      <div className="card" style={{ marginBottom: 16 }}>
         <h2 style={{ marginBottom: 6 }}>Signature</h2>
         <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: '0 0 10px' }}>
           Two pastes share this group when their error type, their message with all variable parts
@@ -86,6 +95,8 @@ export function ErrorGroup() {
           <dd>{group.normalizedMessage}</dd>
         </dl>
       </div>
+
+      <Variance data={variance} />
 
       <h2>Occurrences</h2>
       <div className="list">

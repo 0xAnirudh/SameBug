@@ -130,6 +130,7 @@ export const api = {
   getPaste: (slug, signal) => request(`/api/pastes/${slug}`, { signal }),
   deletePaste: (slug) => request(`/api/pastes/${slug}`, { method: 'DELETE' }),
   errorGroup: (fp, signal) => request(`/api/errors/${fp}`, { signal }),
+  variance: (fp, signal) => request(`/api/errors/${fp}/variance`, { signal }),
   occurrences: (fp, { cursor, limit = 20 } = {}) => {
     const qs = new URLSearchParams({ limit: String(limit) });
     if (cursor) qs.set('cursor', cursor);

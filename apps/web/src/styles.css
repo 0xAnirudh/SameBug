@@ -243,3 +243,86 @@ dl.sig dd { margin: 0; color: var(--ink); word-break: break-all; }
   dl.sig { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   dl.sig dd { margin-bottom: 8px; }
 }
+
+/* --- variance: what these occurrences share, and what differs -------- */
+
+.variance { margin-bottom: 20px; }
+
+.var-head {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ink-mute);
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.var-shared {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+.var-shared li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.var-shared .fn { color: var(--ink); font-weight: 600; }
+.var-shared .loc { color: var(--ink-mute); }
+.var-shared .arrow {
+  color: var(--ink-mute);
+  font-family: var(--sans);
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.var-note { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+.var-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.var-list li { padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
+.var-list li:last-child { border-bottom: 0; }
+.var-list li:first-child { padding-top: 0; }
+
+.var-label {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.var-label strong { color: var(--ink); font-weight: 600; }
+.var-label code { font-size: 11px; padding: 1px 5px; }
+.var-where { font-family: var(--mono); font-size: 11.5px; color: var(--ink-mute); }
+.var-count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.var-values { display: flex; flex-wrap: wrap; gap: 6px; }
+.var-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: var(--sunken);
+  border: 1px solid var(--rule-soft);
+  border-radius: 4px;
+  padding: 2px 8px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.var-more { font-size: 11.5px; color: var(--ink-mute); align-self: center; }
+
+@media (max-width: 520px) {
+  .var-count { margin-left: 0; }
+}
