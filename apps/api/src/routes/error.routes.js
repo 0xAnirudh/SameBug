@@ -24,4 +24,17 @@ router.get(
   }
 );
 
+/**
+ * "These 4 occurrences share getUser -> handleRequest; they differ in
+ * deployment path, line number and the quoted value in the message."
+ *
+ * Separate from the group endpoint because it costs a scan of the occurrences
+ * and the badge on a paste page does not need it.
+ */
+router.get('/:fp/variance', validate({ params: fpParam }), async (req, res) => {
+  // 404 on an unknown fingerprint rather than returning an empty analysis.
+  await fingerprints.getFingerprint(req.params.fp);
+  res.json(await fingerprints.getVariance(req.params.fp));
+});
+
 export default router;

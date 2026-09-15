@@ -2,6 +2,7 @@ import { Fingerprint } from '../models/Fingerprint.js';
 import { Paste } from '../models/Paste.js';
 import { AppError } from '../lib/AppError.js';
 import { logger } from '../lib/logger.js';
+import { analyzeVariance } from '../fingerprint/variance.js';
 
 /**
  * Records one occurrence of an error signature.
@@ -78,6 +79,35 @@ export async function listOccurrences(hash, { cursor, limit = 20 } = {}) {
       ? Buffer.from(`${last.createdAt.toISOString()}|${last._id}`).toString('base64url')
       : null,
   };
+}
+
+/**
+ * What these occurrences share, and exactly which parts of them differ.
+ *
+ * Capped at 200: variance stops telling you anything new long before that, and
+ * an unbounded scan of a popular group is a slow query waiting to happen. The
+ * query rides { fingerprint, createdAt, _id }, so it is the same index scan the
+ * occurrence list uses.
+ */
+export async function getVariance(hash, sampleSize = 200) {
+  const rows = await Paste.find({ fingerprint: hash })
+    .sort({ createdAt: -1, _id: -1 })
+    .limit(sampleSize)
+    .select('parsed')
+    .lean();
+
+  const analysis = analyzeVariance(
+    rows
+      .map((r) => r.parsed)
+      .filter(Boolean)
+      .map((p) => ({
+        message: p.message,
+        normalizedMessage: p.normalizedMessage,
+        frames: p.frames ?? [],
+      }))
+  );
+
+  return { ...analysis, sampled: rows.length, capped: rows.length === sampleSize };
 }
 
 /**
