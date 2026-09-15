@@ -3,6 +3,7 @@ import { Paste } from '../models/Paste.js';
 import { AppError } from '../lib/AppError.js';
 import { logger } from '../lib/logger.js';
 import { analyzeVariance } from '../fingerprint/variance.js';
+import { generateDiagnosis, isDiagnosisAvailable } from './diagnoseService.js';
 
 /**
  * Records one occurrence of an error signature.
@@ -108,6 +109,38 @@ export async function getVariance(hash, sampleSize = 200) {
   );
 
   return { ...analysis, sampled: rows.length, capped: rows.length === sampleSize };
+}
+
+/**
+ * Returns the stored diagnosis, generating one only if there is not already a
+ * current one. This is the cache that makes the feature cheap: one API call per
+ * distinct bug rather than per occurrence.
+ *
+ * @param {string} hash
+ * @param {{ force?: boolean }} [options]
+ */
+export async function getOrCreateDiagnosis(hash, { force = false } = {}) {
+  const group = await getFingerprint(hash);
+
+  const signature = `${group.errorType}|${group.normalizedMessage}|${group.topFrame}`;
+  const cached = group.diagnosis;
+
+  // A diagnosis whose signature no longer matches was produced for a different
+  // grouping rule — serve it, but do not pretend it is current.
+  if (cached && !force) {
+    return { diagnosis: cached, cached: true, stale: cached.signature !== signature };
+  }
+
+  if (!isDiagnosisAvailable()) {
+    return { diagnosis: null, cached: false, available: false };
+  }
+
+  const variance = await getVariance(hash, 50);
+  const diagnosis = await generateDiagnosis(group, variance);
+
+  await Fingerprint.updateOne({ _id: hash }, { $set: { diagnosis } });
+
+  return { diagnosis, cached: false, stale: false };
 }
 
 /**
